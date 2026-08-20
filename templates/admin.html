@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <title>Admin</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="wrap">
+    <div class="nav">
+      <a href="{{ url_for('home') }}">Home</a>
+      <a href="{{ url_for('admin') }}">Admin</a>
+      <a href="{{ url_for('logout') }}">Logout</a>
+    </div>
+    <h1>Admin — รายชื่อผู้ใช้ ({{ total }} คน)</h1>
+    {% if error %}<p class="error">{{ error }}</p>{% endif %}
+    <table>
+      <tr>
+        <th>id</th>
+        <th>username</th>
+        <th>role</th>
+        <th>จัดการ</th>
+      </tr>
+      {% for u in users %}
+      <tr>
+        <td>{{ u['id'] }}</td>
+        <td>{{ u['username'] }}</td>
+        <td>
+          {% if u['role'] == 'super' %}<span class="badge badge-super">เจ้าของ</span>
+          {% elif u['role'] == 'admin' %}<span class="badge badge-admin">แอดมิน</span>
+          {% else %}<span class="badge badge-user">ผู้ใช้</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if u['id'] == user['id'] %}
+          (ตัวเอง)
+          {% elif u['role'] == 'super' %}
+          (เจ้าของ)
+          {% else %}
+            {% if owner %}
+            <form class="row-form" method="post" action="{{ url_for('admin_toggle_role') }}">
+              <input type="hidden" name="user_id" value="{{ u['id'] }}">
+              <input type="hidden" name="role" value="{{ 'user' if u['role'] == 'admin' else 'admin' }}">
+              <button type="submit">{{ 'ถอดแอดมิน' if u['role'] == 'admin' else 'ตั้งเป็นแอดมิน' }}</button>
+            </form>
+            {% endif %}
+            {% if owner or u['role'] == 'user' %}
+            <form class="row-form" method="post" action="{{ url_for('admin_delete') }}">
+              <input type="hidden" name="user_id" value="{{ u['id'] }}">
+              <button class="danger" type="submit">ลบ</button>
+            </form>
+            {% endif %}
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+</body>
+</html>

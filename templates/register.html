@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <title>สมัครสมาชิก</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="wrap">
+    <h1>สมัครสมาชิก</h1>
+    {% if error %}<p class="error">{{ error }}</p>{% endif %}
+    <form method="post">
+      <label for="username">Username</label>
+      <input id="username" type="text" name="username" required>
+
+      <label for="password">Password</label>
+      <input id="password" type="password" name="password" required>
+
+      <button type="submit">สมัคร</button>
+    </form>
+    <p><a href="{{ url_for('login') }}">กลับไป Login</a></p>
+  </div>
+</body>
+</html>
