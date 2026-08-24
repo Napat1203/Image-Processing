@@ -1,58 +1,60 @@
 @import url("https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800&display=swap");
 
-* { box-sizing: border-box; }
+* { 
+  box-sizing: border-box; 
+}
 
 body {
   font-family: "Nunito", "Segoe UI", Tahoma, sans-serif;
   margin: 0;
   min-height: 100vh;
-  color: #5c4b5a;
+  color: #e2e8f0;
   background:
-    radial-gradient(circle at 12% 18%, #ffe4f1 0, transparent 42%),
-    radial-gradient(circle at 88% 8%, #d9f3ff 0, transparent 40%),
-    radial-gradient(circle at 70% 92%, #e5ffe8 0, transparent 38%),
-    #f7f1fb;
+    radial-gradient(circle at 12% 18%, #2d1b2e 0, transparent 42%),
+    radial-gradient(circle at 88% 8%, #1e293b 0, transparent 40%),
+    radial-gradient(circle at 70% 92%, #1a2e26 0, transparent 38%),
+    #0f172a;
 }
 
 .wrap {
   max-width: 780px;
   margin: 48px auto;
-  background: rgba(255, 250, 252, 0.92);
+  background: rgba(30, 41, 59, 0.92);
   padding: 28px 30px;
-  border: 1px solid #f3d6e6;
+  border: 1px solid #334155;
   border-radius: 24px;
-  box-shadow: 0 12px 32px rgba(214, 160, 190, 0.22);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
 }
 
 h1 {
   margin-top: 0;
   font-size: 26px;
-  color: #7a4e6a;
+  color: #f472b6;
 }
 
 label {
   display: block;
   margin: 14px 0 6px;
   font-weight: 700;
-  color: #8a6a80;
+  color: #cbd5e1;
 }
 
 input[type="text"],
 input[type="password"] {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid #f0c9dc;
+  border: 1px solid #475569;
   border-radius: 12px;
-  background: #fff7fb;
-  color: #5c4b5a;
+  background: #1e293b;
+  color: #f8fafc;
   font: inherit;
 }
 
 input[type="text"]:focus,
 input[type="password"]:focus {
-  outline: 2px solid #c9b6f2;
-  border-color: #c9b6f2;
-  background: #fff;
+  outline: 2px solid #a855f7;
+  border-color: #a855f7;
+  background: #0f172a;
 }
 
 button,
@@ -63,35 +65,36 @@ button,
   cursor: pointer;
   border: none;
   border-radius: 999px;
-  background: #f7b6cc;
-  color: #5c3350;
+  background: #ec4899;
+  color: #ffffff;
   font: inherit;
   font-weight: 700;
+  transition: background 0.2s ease;
 }
 
 button:hover,
 .btn:hover {
-  background: #f199bb;
+  background: #db2777;
 }
 
 button.danger {
-  background: #ffc4b8;
-  color: #7a3b36;
+  background: #ef4444;
+  color: #ffffff;
 }
 
 button.danger:hover {
-  background: #f5a898;
+  background: #dc2626;
 }
 
 .error {
-  color: #c45b78;
-  background: #ffe6ee;
+  color: #fca5a5;
+  background: #450a0a;
   padding: 8px 12px;
   border-radius: 12px;
 }
 
 .hint {
-  color: #9a7e93;
+  color: #94a3b8;
   font-size: 14px;
 }
 
@@ -102,19 +105,22 @@ button.danger:hover {
 .nav a {
   margin-right: 10px;
   text-decoration: none;
-  color: #6b8fc7;
-  background: #e7f2ff;
+  color: #38bdf8;
+  background: #1e293b;
+  border: 1px solid #334155;
   padding: 6px 12px;
   border-radius: 999px;
   font-weight: 700;
+  transition: all 0.2s ease;
 }
 
 .nav a:hover {
-  background: #d5e8ff;
+  background: #334155;
+  color: #7dd3fc;
 }
 
 a {
-  color: #7b6cc7;
+  color: #c084fc;
 }
 
 table {
@@ -125,18 +131,18 @@ table {
 }
 
 th, td {
-  border: 1px solid #f0d7e6;
+  border: 1px solid #334155;
   padding: 10px;
   text-align: left;
 }
 
 th {
-  background: #ead9f7;
-  color: #6a4d78;
+  background: #1e1b4b;
+  color: #c7d2fe;
 }
 
 tr:nth-child(even) td {
-  background: #fff6fb;
+  background: #1e293b;
 }
 
 .row-form { display: inline; }
@@ -149,6 +155,48 @@ tr:nth-child(even) td {
   font-weight: 700;
 }
 
-.badge-super { background: #ffe0c2; color: #8a5a30; }
-.badge-admin { background: #d9e8ff; color: #3f5f99; }
-.badge-user { background: #ddf6e5; color: #3d7a55; }
+.badge-super { background: #7c2d12; color: #ffedd5; }
+.badge-admin { background: #1e3a8a; color: #dbeafe; }
+.badge-user { background: #14532d; color: #dcfce7; }
+
+/* Hand Detection UI Styling */
+.video-container {
+  position: relative;
+  width: 100%;
+  max-width: 640px;
+  aspect-ratio: 4 / 3;
+  margin: 20px auto;
+  background-color: #020617;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 2px solid #334155;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+}
+
+#webcam, #overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform: scaleX(-1);
+  object-fit: cover;
+}
+
+.controls {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 16px 0;
+}
+
+#hand-status {
+  margin-top: 14px;
+  padding: 10px 16px;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 16px;
+  color: #cbd5e1;
+  font-weight: 700;
+  text-align: center;
+}
