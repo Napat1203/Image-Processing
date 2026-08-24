@@ -1,1 +1,6 @@
 static/hand_ai_test.html
+users.db
+__pycache__/
+*.pyc
+.venv/
+venv/

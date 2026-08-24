@@ -1,0 +1,154 @@
+@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800&display=swap");
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: "Nunito", "Segoe UI", Tahoma, sans-serif;
+  margin: 0;
+  min-height: 100vh;
+  color: #5c4b5a;
+  background:
+    radial-gradient(circle at 12% 18%, #ffe4f1 0, transparent 42%),
+    radial-gradient(circle at 88% 8%, #d9f3ff 0, transparent 40%),
+    radial-gradient(circle at 70% 92%, #e5ffe8 0, transparent 38%),
+    #f7f1fb;
+}
+
+.wrap {
+  max-width: 780px;
+  margin: 48px auto;
+  background: rgba(255, 250, 252, 0.92);
+  padding: 28px 30px;
+  border: 1px solid #f3d6e6;
+  border-radius: 24px;
+  box-shadow: 0 12px 32px rgba(214, 160, 190, 0.22);
+}
+
+h1 {
+  margin-top: 0;
+  font-size: 26px;
+  color: #7a4e6a;
+}
+
+label {
+  display: block;
+  margin: 14px 0 6px;
+  font-weight: 700;
+  color: #8a6a80;
+}
+
+input[type="text"],
+input[type="password"] {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #f0c9dc;
+  border-radius: 12px;
+  background: #fff7fb;
+  color: #5c4b5a;
+  font: inherit;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus {
+  outline: 2px solid #c9b6f2;
+  border-color: #c9b6f2;
+  background: #fff;
+}
+
+button,
+.btn {
+  margin-top: 12px;
+  margin-right: 6px;
+  padding: 8px 16px;
+  cursor: pointer;
+  border: none;
+  border-radius: 999px;
+  background: #f7b6cc;
+  color: #5c3350;
+  font: inherit;
+  font-weight: 700;
+}
+
+button:hover,
+.btn:hover {
+  background: #f199bb;
+}
+
+button.danger {
+  background: #ffc4b8;
+  color: #7a3b36;
+}
+
+button.danger:hover {
+  background: #f5a898;
+}
+
+.error {
+  color: #c45b78;
+  background: #ffe6ee;
+  padding: 8px 12px;
+  border-radius: 12px;
+}
+
+.hint {
+  color: #9a7e93;
+  font-size: 14px;
+}
+
+.nav {
+  margin-bottom: 18px;
+}
+
+.nav a {
+  margin-right: 10px;
+  text-decoration: none;
+  color: #6b8fc7;
+  background: #e7f2ff;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.nav a:hover {
+  background: #d5e8ff;
+}
+
+a {
+  color: #7b6cc7;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  overflow: hidden;
+  border-radius: 16px;
+}
+
+th, td {
+  border: 1px solid #f0d7e6;
+  padding: 10px;
+  text-align: left;
+}
+
+th {
+  background: #ead9f7;
+  color: #6a4d78;
+}
+
+tr:nth-child(even) td {
+  background: #fff6fb;
+}
+
+.row-form { display: inline; }
+
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.badge-super { background: #ffe0c2; color: #8a5a30; }
+.badge-admin { background: #d9e8ff; color: #3f5f99; }
+.badge-user { background: #ddf6e5; color: #3d7a55; }

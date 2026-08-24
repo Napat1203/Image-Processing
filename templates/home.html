@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <title>Home</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="wrap">
+    <div class="nav">
+      <a href="{{ url_for('home') }}">Home</a>
+      {% if staff %}<a href="{{ url_for('admin') }}">Admin</a>{% endif %}
+      <a href="{{ url_for('logout') }}">Logout</a>
+    </div>
+    <h1>สวัสดี {{ user['username'] }}</h1>
+    <p>role:
+      {% if user['role'] == 'super' %}<span class="badge badge-super">เจ้าของ</span>
+      {% elif user['role'] == 'admin' %}<span class="badge badge-admin">แอดมิน</span>
+      {% else %}<span class="badge badge-user">ผู้ใช้</span>
+      {% endif %}
+    </p>
+    <p>เครื่องมือรูป (ลบพื้นหลัง, generate) จะมาภายหลัง</p>
+  </div>
+</body>
+</html>

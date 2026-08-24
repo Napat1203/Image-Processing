@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <title>Login</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="wrap">
+    <h1>เข้าสู่ระบบ</h1>
+    {% if error %}<p class="error">{{ error }}</p>{% endif %}
+    <form method="post">
+      <label for="username">Username</label>
+      <input id="username" type="text" name="username" required>
+
+      <label for="password">Password</label>
+      <input id="password" type="password" name="password" required>
+
+      <button type="submit">Login</button>
+    </form>
+    <p><a href="{{ url_for('register') }}">สมัครสมาชิก</a></p>
+    <p class="hint">เดโม่เจ้าของระบบ: username <b>super</b> / password <b>super</b></p>
+  </div>
+</body>
+</html>
