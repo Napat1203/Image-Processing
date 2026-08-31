@@ -5,7 +5,7 @@ app = Flask(__name__)
 # secret ชั่วคราวสำหรับ session — ยังไม่เน้นความปลอดภัย
 app.secret_key = "restore-web-dev-not-secure"
 # ต้องใส่เป็น url ของ backend
-BACKEND_URL = "http://172.20.56.115:5000"
+BACKEND_URL = "http://172.20.56.115:8000"
 
 @app.route("/")
 def index():
@@ -127,7 +127,7 @@ def logout():
 if __name__ == "__main__":
     app.run(
         host="0.0.0.0",
-        port=5000,
+        port=8000,
         debug=True
     )
 
