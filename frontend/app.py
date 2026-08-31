@@ -3,8 +3,14 @@ app.py — Flask เสิร์ฟ HTML + ต่อ SQLite
 
 """
 
+import sys
+from pathlib import Path
+
 from flask import Flask, redirect, render_template, request, session, url_for
 import sqlite3
+
+# หา backend/db.py — ย้ายโฟลเดอร์แล้ว import ตรงๆ ไม่เจอ
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "backend"))
 
 from db import (
     count_users,
