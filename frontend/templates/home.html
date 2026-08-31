@@ -5,6 +5,7 @@
   <title>Home</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+
 <body>
   <div class="wrap">
     <div class="nav">
@@ -20,6 +21,56 @@
       {% else %}<span class="badge badge-user">ผู้ใช้</span>
       {% endif %}
     </p>
+
+    <!-- Image Upload -->
+    <div class="image-section">
+
+        <h2>เลือกรูปภาพ</h2>
+
+        <input
+            type="file"
+            id="image-input"
+            accept="image/*"
+        >
+
+        <div class="image-preview">
+            <img
+                id="image-preview"
+                src=""
+                alt="Preview"
+                style="display: none;"
+            >
+        </div>
+
+    </div>
+
+
+    <!-- Model Selection -->
+    <div class="model-section">
+
+        <label for="model-select">เลือกโมเดล</label>
+
+        <select id="model-select">
+            <option value="model1">Model 1</option>
+            <option value="model2">Model 2</option>
+            <option value="model3">Model 3</option>
+        </select>
+
+    </div>
+
+
+    <!-- Process Button -->
+    <div class="controls">
+
+        <button id="btn-process">
+            ประมวลผล
+        </button>
+
+    </div>
+
+    <div id="process-status">
+        พร้อมใช้งาน
+    </div>
 
     <!-- Hand Detection Container -->
     <div class="video-container">
