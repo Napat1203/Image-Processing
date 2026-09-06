@@ -1,11 +1,12 @@
-from flask import Flask, redirect, render_template, request, session, url_for
+from flask import Flask, jsonify, redirect, render_template, request, session, url_for
 import requests 
 
 app = Flask(__name__)
 # secret ชั่วคราวสำหรับ session — ยังไม่เน้นความปลอดภัย
 app.secret_key = "restore-web-dev-not-secure"
 # ต้องใส่เป็น url ของ backend
-BACKEND_URL = "http://172.20.56.115:5000"
+BACKEND_URL = "http://172.20.56.115:8000" 
+# BACKEND_URL = "http://127.0.0.1:8000" 
 
 @app.route("/")
 def index():
@@ -124,6 +125,70 @@ def logout():
     session.clear()
 
     return redirect(url_for("login"))
+
+@app.route("/admin")
+def admin():
+    """แสดงหน้า Admin"""
+
+    user = session.get("user")
+
+    if user is None:
+        return redirect(url_for("login"))
+
+    # ตรวจสอบว่าเป็น super หรือ admin หรือไม่
+    if user.get("role") not in ["super", "admin"]:
+        return redirect(url_for("home"))
+
+    return render_template(
+        "admin.html",
+        user=user,
+        users=[],
+        total=0,
+        error=None,
+        owners=user.get("role") == "super"
+    )
+
+@app.route("/api/process-image", methods=["POST"])
+def process_image():
+    """รับไฟล์รูปภาพจากหน้าเว็บ แล้วส่งไป Backend"""
+
+    user = session.get("user")
+
+    if user is None:
+        return jsonify({"success": False, "message": "กรุณาเข้าสู่ระบบ"}), 401
+
+    image = request.files.get("image")
+    model = request.form.get("model") or "stub"
+
+    if not image:
+        return jsonify({"success": False, "message": "กรุณาเลือกไฟล์รูปภาพ"}), 400
+
+    try:
+        # ส่งไฟล์ไป Backend
+        response = requests.post(
+            f"{BACKEND_URL}/api/process",
+            files={
+                "file": (
+                    image.filename,
+                    image.read(),
+                    image.mimetype or "application/octet-stream"
+                    )
+                },
+            data={
+                "user_id": user["id"],
+                "model": model
+            },
+            timeout=30
+        )
+
+        result = response.json()
+
+        if result.get("status") == "ok":
+            return jsonify({"success": True, "note": result.get("note")}), 200
+        return jsonify({"success": False, "message": result.get("note", "เกิดข้อผิดพลาด")}), 500
+    except requests.RequestException:
+        return jsonify({"success": False, "message": "ไม่สามารถเชื่อมต่อ Backend ได้"}), 500
+   
 if __name__ == "__main__":
     app.run(
         host="0.0.0.0",
