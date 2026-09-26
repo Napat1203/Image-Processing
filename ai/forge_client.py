@@ -5,6 +5,7 @@ in this file because the page does not let the user change them.
 """
 
 import os
+import threading
 
 import requests
 
@@ -12,6 +13,8 @@ import requests
 # This Forge serves plain http. An https URL fails the connection.
 FORGE_URL = os.environ.get("FORGE_URL", "http://127.0.0.1:7860").rstrip("/")
 
+# One drawing at a time. A second caller waits here instead of starting Forge twice.
+_generate_lock = threading.Lock()
 
 class ForgeError(Exception):
     pass
@@ -69,17 +72,18 @@ def build_txt2img_payload(prompt):
 
 
 def generate_image(prompt, base_url=None, session=None, translator=None):
-    text = prepare_prompt(prompt, translator=translator)
-    payload = build_txt2img_payload(text)
-    url = (base_url or FORGE_URL).rstrip("/") + "/sdapi/v1/txt2img"
-    http = session or requests
-    try:
-        response = http.post(url, json=payload, timeout=180)
-    except requests.RequestException as exc:
-        raise ForgeError("Start Forge first, then generate") from exc
-    if response.status_code >= 400:
-        raise ForgeError("Forge is not accepting requests. Launch it with --api")
-    return image_from_response(response.json())
+    with _generate_lock:
+        text = prepare_prompt(prompt, translator=translator)
+        payload = build_txt2img_payload(text)
+        url = (base_url or FORGE_URL).rstrip("/") + "/sdapi/v1/txt2img"
+        http = session or requests
+        try:
+            response = http.post(url, json=payload, timeout=180)
+        except requests.RequestException as exc:
+            raise ForgeError("Start Forge first, then generate") from exc
+        if response.status_code >= 400:
+            raise ForgeError("Forge is not accepting requests. Launch it with --api")
+        return image_from_response(response.json())
 
 
 def image_from_response(data):
