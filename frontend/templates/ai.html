@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <!-- Link to the style file -->
+        <link rel="stylesheet" href="style.css">
+        <!--Help show thai correct characters-->
+        <meta charset="UTF-8">
+        <!--Help show fit page-->
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <!--Title of the page-->
+        <title>LUMA</title>
+    </head>
+
+    <body>
+        <header class="navbar">
+            <!-- Logo -->
+            <div class="logo">
+                LUMA
+            </div>
+
+            <!-- Navigation links -->
+            <nav class="nav-menu">
+                <a href="index.html">Home</a>
+                <a href="ai.html" class="active">AI</a>
+                <a href="about.html">About</a>
+                <a href="Login.html">User</a>
+            </nav>
+
+            <!--Theme btn-->
+            <label class="theme-toggle">
+                <input type="checkbox"> <!--get status-->
+                <span class="toggle-slider"></span> <!--output of the toggle-->
+            </label>
+        </header>
+
+        <main class="ai-page">
+
+            <aside class="ai-sidebar">
+                <h2>Mode</h2>
+                
+                <a href="ai.html" class="mode-active">Image</a>
+                <a href="webcam.html" class="mode-webcam">Webcam</a>
+
+                <a href="index.html" class="logout">Logout</a>
+            </aside>
+
+            <section class="workspace">
+
+                <!-- Welcome box -->
+               <div class="welcome-box">
+                    <h1>Welcome, User!</h1>
+
+                    <p>
+                        Let's create something with LUMA.
+                    </p>
+               </div>
+
+                <!--Ai work area-->
+               <div class="ai-work">
+
+                    <!--Upload-->
+                    <div class="upload-box">
+
+                        <img id="image-preview" src="" alt="Image Preview">
+
+                        <p id="file-name">
+                            Upload Your Image
+                        </p>
+                        <input type="file" id="file-input" accept="image/*">
+                        <button id="choose-file">
+                            Choose File
+                        </button>
+                    </div>
+
+                    <!--Middle-->
+                    <div class="process">
+
+                        <div class="model-select">
+
+                            <button class="model-btn" id="model-btn">
+                                Select AI Model ▼
+                            </button>
+
+                            <div class="model-menu" id="model-menu">
+                                <button class="model-option">Model 1</button>
+                                <button class="model-option">Model 2</button>
+                                <button class="model-option">Model 3</button>
+                            </div>
+
+                        </div>
+
+                        <div class="arrow">
+                            →
+                        </div>
+
+                        <button class="generate-btn" id="generate-btn">
+                            Generate
+                        </button>
+
+                    </div>
+
+                    <!--Result-->
+                    <div class="result-box">
+
+                        <p id="result-text">
+                            Result
+                        </p>
+                        <img id="result-image" src="" alt="AI Result"> 
+                        <a id="download-btn" class="download-btn" href="#" download="luma-result.png">
+                            Download
+                        </a>
+                    </div>
+
+               </div>
+            </section>
+
+        </main>
+
+        <script src="script.js"></script>
+
+    </body>
+</html>
