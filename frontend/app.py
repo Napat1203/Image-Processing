@@ -5,16 +5,12 @@ app = Flask(__name__)
 # secret ชั่วคราวสำหรับ session — ยังไม่เน้นความปลอดภัย
 app.secret_key = "restore-web-dev-not-secure"
 # ต้องใส่เป็น url ของ backend
-BACKEND_URL = "http://172.20.56.115:8000" 
-# BACKEND_URL = "http://127.0.0.1:8000" 
+#BACKEND_URL = "http://172.20.56.115:8000" 
+BACKEND_URL = "http://127.0.0.1:8000" 
 
 @app.route("/")
 def index():
-    """ถ้า login แล้วไป Home ถ้ายังไม่ login ไป Login"""
-    if session.get("user"):
-        return redirect(url_for("home"))
-
-    return redirect(url_for("login"))
+    return redirect(url_for("home"))
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -44,7 +40,7 @@ def login():
                 # เก็บข้อมูล User ที่ Backend ส่งกลับมา
                 session["user"] = result["user"]
 
-                return redirect(url_for("home"))
+                return redirect(url_for("image"))
 
             return render_template(
                 "login.html",
@@ -93,7 +89,7 @@ def register():
         except requests.RequestException:
             return render_template(
                 "register.html",
-                error="ไม่สามารถเชื่อมต่อ Backend ได้"
+                error="Can't connect to Backend."
             )
 
     return render_template("register.html")
@@ -105,16 +101,15 @@ def home():
 
     user = session.get("user")
 
-    if user is None:
-        return redirect(url_for("login"))
+    staff = False
 
-    # ตรวจสอบว่าเป็น super หรือ admin หรือไม่
-    staff = user.get("role") in ["super", "admin"]
+    if user:
+        staff = user.get("role") in ["super", "admin"]
 
     return render_template(
         "home.html",
         user=user,
-        staff=staff
+        staff=staff 
     )
 
 
@@ -137,7 +132,7 @@ def admin():
 
     # ตรวจสอบว่าเป็น super หรือ admin หรือไม่
     if user.get("role") not in ["super", "admin"]:
-        return redirect(url_for("home"))
+        return redirect(url_for("image"))
 
     return render_template(
         "admin.html",
@@ -145,7 +140,7 @@ def admin():
         users=[],
         total=0,
         error=None,
-        owners=user.get("role") == "super"
+        owner=user.get("role") == "super"
     )
 
 @app.route("/api/process-image", methods=["POST"])
@@ -188,7 +183,27 @@ def process_image():
         return jsonify({"success": False, "message": result.get("note", "เกิดข้อผิดพลาด")}), 500
     except requests.RequestException:
         return jsonify({"success": False, "message": "ไม่สามารถเชื่อมต่อ Backend ได้"}), 500
-   
+
+@app.route("/image")
+def image():
+    user = session.get("user")
+
+    if user is None:
+        return redirect(url_for("login"))
+    return render_template("image.html", user=user) 
+
+@app.route("/webcam")
+def webcam():
+    user = session.get("user")
+
+    if user is None:
+        return redirect(url_for("login"))
+    return render_template("webcam.html", user=user) 
+
+@app.route("/about")
+def about():
+    return render_template("about.html")
+
 if __name__ == "__main__":
     app.run(
         host="0.0.0.0",

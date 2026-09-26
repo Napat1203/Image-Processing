@@ -2,16 +2,28 @@
 <html lang="th">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin</title>
+  
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
   <div class="wrap">
-    <div class="nav">
-      <a href="{{ url_for('home') }}">Home</a>
-      <a href="{{ url_for('admin') }}">Admin</a>
-      <a href="{{ url_for('logout') }}">Logout</a>
-    </div>
+    <header class="navbar">
+      <div class="logo">LUMA</div>
+
+      <nav class="nav-menu">
+        <a href="{{ url_for('home') }}">Home</a>
+        <a href="{{ url_for('admin') }}" class="active">Admin</a>
+        <a href="{{ url_for('logout') }}">Logout</a>
+      </nav>
+
+      <label class="theme-toggle">
+        <input type="checkbox">
+        <span class="toggle-slider"></span>
+      </label>
+    </header>
+
     <h1>Admin — รายชื่อผู้ใช้ ({{ total }} คน)</h1>
     {% if error %}<p class="error">{{ error }}</p>{% endif %}
     <table>
@@ -56,5 +68,6 @@
       {% endfor %}
     </table>
   </div>
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>

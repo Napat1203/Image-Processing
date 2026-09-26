@@ -5,7 +5,7 @@
     <head>
 
         <!-- Link to the style file -->
-        <link rel="stylesheet" href="style.css">
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
         <!--Help show thai correct characters-->
         <meta charset="UTF-8">
         <!--Help show fit page-->
@@ -25,10 +25,10 @@
 
              <!-- Navigation links -->
               <nav class="nav-menu">
-                <a href="home.html" class="active">Home</a>
-                <a href="ai.html">AI</a>
-                <a href="about.html">About</a>
-                <a href="Login.html">User</a>
+                <a href="{{ url_for('home') }}" class="active">Home</a>
+                <a href="{{ url_for('image')}}">AI</a>
+                <a href="{{ url_for('about')}}">About</a>
+                <a href="{{ url_for('logout') }}">Logout</a>
               </nav>
 
               <!--Theme btn-->
@@ -47,14 +47,12 @@
                 </p>
 
                 <!--Button to go to the Login page -->
-                <a href="Login.html" class="getstart-btn">
-                    Get Started
-                </a>
+                <a href="{{ url_for('login') }}" class="getstart-btn"> Get Started</a>
             </section>
 
          </main>
 
-         <script src="script.js"></script>
+         <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 
     </body>
 

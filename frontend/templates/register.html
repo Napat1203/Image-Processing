@@ -10,7 +10,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Link to the style file -->
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
     <!-- Title of the page -->
     <title>LUMA - Register</title>
@@ -33,22 +33,11 @@
         <!-- Navigation links -->
         <nav class="nav-menu">
 
-            <a href="home.html">
-                Home
-            </a>
-
-            <a href="ai.html">
-                AI
-            </a>
-
-            <a href="about.html">
-                About
-            </a>
-
-            <a href="login.html" class="active">
-                Login
-            </a>
-
+            <a href="{{ url_for('home') }}">Home</a>
+            <a href="{{ url_for('image')}}">AI</a>
+            <a href="{{ url_for('about')}}">About</a>
+            <a href="{{ url_for('login')}}" class="active">Login</a>
+          
         </nav>
 
 
@@ -75,35 +64,45 @@
 
         <section class="auth-box register-box">
 
-            <!-- Username -->
-            <input
+            <form method="POST" action="{{ url_for('register') }}">
+
+              <!-- Username -->
+              <input
                 type="text"
+                name="username"
                 class="auth-input"
                 placeholder="Username"
-            >
+                required
+              >
 
-
-            <!-- Password -->
-            <input
+              <!-- Password -->
+              <input
                 type="password"
+                name="password"
                 class="auth-input"
                 placeholder="Password"
-            >
+                required
+              >
 
-
-            <!-- Confirm Password -->
-            <input
+              <!-- Confirm Password -->
+              <input
                 type="password"
                 class="auth-input"
                 placeholder="Confirm Password"
-            >
+                required
+              >
 
-
-            <!-- Register button -->
-            <button class="auth-btn">
+              <!-- Register button -->
+              <button type="submit" class="auth-btn">
                 Register
-            </button>
+              </button>
 
+            </form>
+
+            <!-- Error message -->
+            {% if error %}
+                <p class="error">{{ error }}</p>
+            {% endif %}
 
             <!-- Login link -->
             <div class="auth-link-area">
@@ -112,7 +111,7 @@
                     Already have an account?
                 </p>
 
-                <a href="login.html">
+                <a href="{{ url_for('login') }}">
                     Login
                 </a>
 
@@ -122,7 +121,7 @@
 
     </main>
     
-    <script src="script.js"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 
 </body>
 

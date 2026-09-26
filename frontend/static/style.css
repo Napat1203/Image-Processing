@@ -98,6 +98,8 @@ body {
 
     /* remove underline default*/
     text-decoration: none;
+    border-bottom: 2px solid transparent;
+    padding-bottom: 4px;
 }
 
 .nav-menu a.active {
@@ -107,7 +109,6 @@ body {
 
     /* set underline for active link */
     border-bottom: 2px solid var(--main-text);
-    padding-bottom: 0.2rem;
 }
 
 .nav-menu a:hover {
@@ -116,7 +117,6 @@ body {
 
     /* set underline for hover link */
     border-bottom: 2px solid var(--minor-text);
-    padding-bottom: 0.2rem;
 }
 
 .theme-toggle {
@@ -611,6 +611,8 @@ body {
     font-weight: bold;
     cursor: pointer;
     transition: 0.3s;
+    display: block;
+    margin: 0 auto;
 }
 
 
