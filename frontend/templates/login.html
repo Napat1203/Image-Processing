@@ -1,25 +1,119 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="en">
+
 <head>
-  <meta charset="utf-8">
-  <title>Login</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <!-- Help show Thai correct characters -->
+    <meta charset="UTF-8">
+
+    <!-- Help show fit page -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Link to the style file -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <!-- Title of the page -->
+    <title>LUMA - Login</title>
+
 </head>
+
+
 <body>
-  <div class="wrap">
-    <h1>เข้าสู่ระบบ</h1>
-    {% if error %}<p class="error">{{ error }}</p>{% endif %}
-    <form method="post">
-      <label for="username">Username</label>
-      <input id="username" type="text" name="username" required>
 
-      <label for="password">Password</label>
-      <input id="password" type="password" name="password" required>
+    <!-- ================= Navbar ================= -->
 
-      <button type="submit">Login</button>
-    </form>
-    <p><a href="{{ url_for('register') }}">สมัครสมาชิก</a></p>
-    <p class="hint">เดโม่เจ้าของระบบ: username <b>super</b> / password <b>super</b></p>
-  </div>
+    <header class="navbar">
+
+        <!-- Logo -->
+        <div class="logo">
+            LUMA
+        </div>
+
+
+        <!-- Navigation links -->
+        <nav class="nav-menu">
+
+            <a href="{{ url_for('home') }}">Home</a>
+            <a href="{{ url_for('image')}}">AI</a>
+            <a href="{{ url_for('about')}}">About</a>
+            <a href="{{ url_for('login')}}" class="active">Login</a>
+
+        </nav>
+
+
+        <!-- Theme button -->
+        <label class="theme-toggle">
+
+            <input type="checkbox">
+
+            <span class="toggle-slider"></span>
+
+        </label>
+
+    </header>
+
+
+    <!-- ================= Login ================= -->
+
+    <main class="auth-page">
+
+        <h1 class="auth-title">
+            Login
+        </h1>
+
+
+        <section class="auth-box">
+            <form method="POST" action="{{ url_for('login') }}">
+
+                <!-- Username -->
+                <input
+                    type="text"
+                    name="username"
+                    class="auth-input"
+                    placeholder="Username"
+                    required
+                >
+
+                <!-- Password -->
+                <input
+                    type="password"
+                    name="password"
+                    class="auth-input"
+                    placeholder="Password"
+                    required
+                >
+
+                <!-- Login button -->
+                <button type="submit" class="auth-btn">
+                    Log in
+                </button> 
+
+            </form>
+
+            <!-- Error message -->
+            {% if error %}
+                <p class="error">{{ error }}</p>
+            {% endif %}
+
+            <!-- Register link -->
+            <div class="auth-link-area">
+
+                <p>
+                    Don’t have an account?
+                </p>
+
+                <a href="{{ url_for('register') }}">
+                    Create Account
+                </a>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
 </body>
+
 </html>

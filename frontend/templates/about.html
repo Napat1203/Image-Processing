@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <!-- Link to the style file -->
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+        <!--Help show thai correct characters-->
+        <meta charset="UTF-8">
+        <!--Help show fit page-->
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <!--Title of the page-->
+        <title>LUMA</title>
+    </head>
+
+    <body>
+        <header class="navbar">
+            <!-- Logo -->
+            <div class="logo">
+                LUMA
+            </div>
+
+            <!-- Navigation links -->
+            <nav class="nav-menu">
+                <a href="{{ url_for('home') }}">Home</a>
+                <a href="{{ url_for('image')}}">AI</a>
+                <a href="{{ url_for('about')}}" class="active">About</a>
+                
+                {% if user and user['role'] in ['admin', 'super'] %}
+                  <a href="{{ url_for('admin') }}">Admin</a>
+                {% endif %}
+
+                {% if user %}
+                  <a href="{{ url_for('logout') }}">Logout</a>
+                {% else %}
+                  <a href="{{ url_for('login') }}">Login</a>
+                {% endif %}
+            </nav>
+
+            <!--Theme btn-->
+            <label class="theme-toggle">
+                <input type="checkbox"> <!--get status-->
+                <span class="toggle-slider"></span> <!--output of the toggle-->
+            </label>
+        </header>
+
+        <main class="home">
+            <section class="hero">
+                <h1>
+                    Members
+                </h1>
+
+                <p>
+                    6710301020 นางสาวพรพิรุณ  ขามเทศ<br>
+                    6710301034 นางสาวณภัทร  ภูสระล้ำ<br>
+                    6710301043 นายนที ผิวเกลี้ยง
+                </p>
+            </section>
+
+        </main>
+
+        <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+    </body>
+</html>

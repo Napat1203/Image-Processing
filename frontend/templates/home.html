@@ -1,99 +1,76 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-  <meta charset="utf-8">
-  <title>Home</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
+<!DOCTYPE html> 
+<!-- language of the page -->
+<html lang="en">
 
-<body>
-  <div class="wrap">
-    <div class="nav">
-      <a href="{{ url_for('home') }}">Home</a>
-      {% if staff %}<a href="{{ url_for('admin') }}">Admin</a>{% endif %}
-      <a href="{{ url_for('logout') }}">Logout</a>
-    </div>
+    <head>
 
-    <h1>สวัสดี {{ user['username'] }}</h1>
-    <p>role:
-      {% if user['role'] == 'super' %}<span class="badge badge-super">เจ้าของ</span>
-      {% elif user['role'] == 'admin' %}<span class="badge badge-admin">แอดมิน</span>
-      {% else %}<span class="badge badge-user">ผู้ใช้</span>
-      {% endif %}
-    </p>
+        <!-- Link to the style file -->
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+        <!--Help show thai correct characters-->
+        <meta charset="UTF-8">
+        <!--Help show fit page-->
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <!--Title of the page-->
+        <title>LUMA</title>
 
-    <!-- Image Upload -->
-    <div class="image-section">
+    </head> 
 
-        <h2>เลือกรูปภาพ</h2>
+    <body>
+        <!-- Navigation -->
+         <header class="navbar">
+            <!-- Logo -->
+             <div class="logo">
+                LUMA
+             </div>
 
-        <input
-            type="file"
-            id="image-input"
-            accept="image/*"
-        >
+             <!-- Navigation links -->
+              <nav class="nav-menu">
+                <a href="{{ url_for('home') }}" class="active">Home</a>
+                <a href="{{ url_for('image')}}">AI</a>
+                <a href="{{ url_for('about')}}">About</a>
 
-        <div class="image-preview">
-            <img
-                id="image-preview"
-                src=""
-                alt="Preview"
-                style="display: none;"
-            >
-        </div>
+                {% if user and user['role'] in ['admin', 'super'] %}
+                  <a href="{{ url_for('admin') }}">Admin</a>
+                {% endif %}
 
-    </div>
+                {% if user %}
+                  <a href="{{ url_for('logout') }}">Logout</a>
+                {% else %}
+                  <a href="{{ url_for('login') }}">Login</a>
+                {% endif %}
+              </nav>
 
+              <!--Theme btn-->
+              <label class="theme-toggle">
+                <input type="checkbox"> <!--get status-->
+                <span class="toggle-slider"></span> <!--output of the toggle-->
+              </label>
+         </header>
 
-    <!-- Model Selection -->
-    <div class="model-section">
+         <main class="home">
+            <section class="hero">
+                <h1>Welcome to LUMA</h1>
 
-        <label for="model-select">เลือกโมเดล</label>
+                <p>
+                    LUMA is from the word "Learning-based Universal Media Artist"
+                </p>
 
-        <select id="model-select">
-            <option value="model1">Model 1</option>
-            <option value="model2">Model 2</option>
-            <option value="model3">Model 3</option>
-        </select>
+                <!--Button to get started -->
+                {% if user %}
+                  <a href="{{ url_for('image') }}" class="getstart-btn">
+                      Get Started
+                  </a>
+                {% else %}
+                  <a href="{{ url_for('login') }}" class="getstart-btn">
+                      Get Started
+                  </a>
+                {% endif %}
+            </section>
 
-    </div>
+         </main>
 
+         <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 
-    <!-- Process Button -->
-    <div class="controls">
+    </body>
 
-        <button id="btn-process">
-            ประมวลผล
-        </button>
-
-    </div>
-
-    <div id="process-status">
-        พร้อมใช้งาน
-    </div>
-
-    <!-- Hand Detection Container -->
-    <div class="video-container">
-      <video id="webcam" autoplay playsinline></video>
-      <canvas id="overlay"></canvas>
-    </div>
-
-    <div class="controls">
-      <button id="btn-start">Start</button>
-      <button id="btn-stop" class="danger">Stop</button>
-    </div>
-
-    <div id="hand-status">พร้อมใช้งาน</div>
-  </div>
-
-  <!-- โหลดสคริปต์เรียงตามลำดับที่กำหนด -->
-<!-- 1) MediaPipe vision_bundle CDN เวอร์ชันเสถียร -->
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.js" crossorigin="anonymous"></script>
-  <!-- 2) /static/js/hand_ai.js (เพิ่ม type="module" เพื่อรองรับ ES Module Import) -->
-  <script type="module" src="{{ url_for('static', filename='js/hand_ai.js') }}"></script>
-  <!-- 3) /static/js/hand_ui.js -->
-  <script src="{{ url_for('static', filename='js/hand_ui.js') }}"></script>
-  <!-- 4) /static/js/image_process.js -->
-  <script src="{{ url_for('static', filename='js/image_process.js') }}"></script>
-</body>
 </html>
