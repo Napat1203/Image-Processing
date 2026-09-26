@@ -28,7 +28,16 @@
                 <a href="{{ url_for('home') }}" class="active">Home</a>
                 <a href="{{ url_for('image')}}">AI</a>
                 <a href="{{ url_for('about')}}">About</a>
-                <a href="{{ url_for('logout') }}">Logout</a>
+
+                {% if user and user['role'] in ['admin', 'super'] %}
+                  <a href="{{ url_for('admin') }}">Admin</a>
+                {% endif %}
+
+                {% if user %}
+                  <a href="{{ url_for('logout') }}">Logout</a>
+                {% else %}
+                  <a href="{{ url_for('login') }}">Login</a>
+                {% endif %}
               </nav>
 
               <!--Theme btn-->
@@ -46,8 +55,16 @@
                     LUMA is from the word "Learning-based Universal Media Artist"
                 </p>
 
-                <!--Button to go to the Login page -->
-                <a href="{{ url_for('login') }}" class="getstart-btn"> Get Started</a>
+                <!--Button to get started -->
+                {% if user %}
+                  <a href="{{ url_for('image') }}" class="getstart-btn">
+                      Get Started
+                  </a>
+                {% else %}
+                  <a href="{{ url_for('login') }}" class="getstart-btn">
+                      Get Started
+                  </a>
+                {% endif %}
             </section>
 
          </main>

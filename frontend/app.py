@@ -202,7 +202,8 @@ def webcam():
 
 @app.route("/about")
 def about():
-    return render_template("about.html")
+    user = session.get("user")
+    return render_template("about.html", user=user)
 
 if __name__ == "__main__":
     app.run(

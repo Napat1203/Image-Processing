@@ -30,6 +30,7 @@
     --background: #40352C; 
     --navbar: #2D2621; 
     --box: #F7E7C9; 
+    --box-table: #2D2621;
     --main-text: #F7E7C9; 
     --minor-text: #9D7356;
 }
@@ -777,4 +778,113 @@ body {
 
 .model-menu button:hover {
     background-color: var(--navbar);
+} 
+
+/* ================= Admin ================= */
+
+.admin-page {
+    padding: 2rem;
+}
+
+.admin-page h1 {
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: var(--box-table);
+    color: var(--main-text);
+}
+
+.admin-table th,
+.admin-table td {
+    padding: 0.8rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--minor-text);
+}
+
+.admin-table th {
+    font-weight: bold;
+}
+
+.admin-table tr:last-child td {
+    border-bottom: none;
+} 
+
+/* ================= Admin Badge ================= */
+
+.badge {
+    display: inline-block;
+    padding: 0.3rem 0.7rem;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    font-weight: bold;
+}
+
+.badge-super {
+    background-color: var(--main-text);
+    color: var(--background);
+}
+
+.badge-admin {
+    background-color: var(--minor-text);
+    color: var(--background);
+}
+
+.badge-user {
+    background-color: var(--background);
+    color: var(--main-text);
+} 
+
+/* ================= Admin Action ================= */
+
+.row-form {
+    display: inline-block;
+    margin-right: 0.4rem;
+}
+
+.row-form button {
+    background-color: var(--minor-text);
+    color: var(--background);
+    border: none;
+    border-radius: 10px;
+    padding: 0.4rem 0.7rem;
+    font-family: inherit;
+    font-size: 0.7rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.row-form button:hover {
+    background-color: var(--main-text);
+} 
+
+.row-form button.danger {
+    background-color: var(--main-text);
+    color: var(--background);
+}
+
+.row-form button.danger:hover {
+    background-color: var(--minor-text);
+} 
+
+/* ================= Admin Status ================= */
+
+.admin-status {
+    color: var(--minor-text);
+    font-size: 0.75rem;
+    font-weight: bold;
+} 
+
+.admin-page .error {
+    margin-bottom: 1rem;
+    color: var(--minor-text);
+    font-size: 0.8rem;
+} 
+
+.admin-table tr:hover {
+    background-color: var(--background);
 }

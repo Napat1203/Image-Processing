@@ -23,7 +23,12 @@
             <nav class="nav-menu">
                 <a href="{{ url_for('home') }}">Home</a>
                 <a href="{{ url_for('image') }}" class="active">AI</a>
-                <a href="{{ url_for('about')}}">About</a>
+                <a href="{{ url_for('about') }}">About</a>
+
+                {% if user and user['role'] in ['admin', 'super'] %}
+                    <a href="{{ url_for('admin') }}">Admin</a>
+                {% endif %}
+
                 <a href="{{ url_for('logout') }}">Logout</a>
             </nav>
 
@@ -42,7 +47,7 @@
                 <a href="{{ url_for('image')}}" class="mode-active">Image</a>
                 <a href="{{ url_for('webcam')}}" class="mode-webcam">Webcam</a>
 
-                <a href="{{ url_for('home')}}" class="logout">Logout</a>
+                <a href="{{ url_for('logout')}}" class="logout">Logout</a>
             </aside>
 
             <section class="workspace">
