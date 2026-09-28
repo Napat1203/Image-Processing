@@ -309,6 +309,18 @@ def about():  # ฟังก์ชันแสดงหน้า About
 
     return render_template("about.html", user=user)  # แสดงหน้า about.html
 
+# =========================================================
+# ฟังก์ชันแสดงหน้า About
+# =========================================================
+@app.route("/TXT2img")
+def txt2img():
+    user = session.get("user")  # อ่านข้อมูล user จาก session
+    
+    if user is None:  # ตรวจสอบว่าผู้ใช้ Login แล้วหรือยัง
+        return redirect(url_for("login"))  # ถ้ายังไม่ได้ Login ให้กลับไปหน้า Login
+    
+    return render_template("TXT2img.html", user=user)  # แสดงหน้า webcam.html
+
 
 # =========================================================
 # เริ่มต้น Backend Server

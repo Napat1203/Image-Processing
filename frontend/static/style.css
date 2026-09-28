@@ -240,13 +240,15 @@ body {
     align-items: flex-end;
     gap: 0;
     margin-left: 3%;
+    margin-top: 1rem;
+    margin-bottom: 0;
     position: relative;
     z-index: 2;
 }
 
 .ai-tab {
-    min-width: 155px;
-    padding: 0.65rem 1.5rem;
+    width: 155px;
+    padding: 0.65rem 1rem;
     background-color: var(--navbar);
     color: var(--minor-text);
     text-decoration: none;
@@ -842,4 +844,241 @@ body {
 
 .admin-table tr:hover {
     background-color: var(--background);
+} 
+
+/* =========================================================
+   TXT2img
+   ========================================================= */
+.txt2img-work {
+    width: 100%;
+    background-color: var(--navbar);
+    border-radius: 30px;
+
+    padding: 2rem 8%;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    gap: 1.5rem;
+}
+
+
+/* ================= Prompt Box ================= */
+
+.prompt-box {
+    width: 100%;
+    max-width: 900px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    gap: 0.8rem;
+}
+
+.prompt-box label {
+    width: 100%;
+
+    color: var(--main-text);
+
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+#prompt-input {
+    width: 100%;
+    min-height: 120px;
+    padding: 1rem;
+
+    background-color: var(--background);
+    color: var(--main-text);
+
+    border: none;
+    border-radius: 20px;
+
+    font-family: inherit;
+    font-size: 0.9rem;
+
+    text-align: left !important; 
+    vertical-align: top;
+    resize: vertical;
+    outline: none; 
+
+    direction: ltr;
+}
+
+#prompt-input::placeholder {
+    color: var(--minor-text);
+}
+
+
+/* ================= Generate Button ================= */
+
+.prompt-box .generate-btn {
+    align-self: flex-end;
+
+    background-color: var(--minor-text);
+    color: var(--background);
+
+    border: none;
+
+    padding: 0.7rem 1.5rem;
+
+    border-radius: 15px;
+
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: bold;
+
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.prompt-box .generate-btn:hover {
+    background-color: var(--main-text);
+}
+
+
+/* ================= Generated Result ================= */
+
+#generated-result {
+    width: 100%;
+    max-width: 900px;
+
+    min-height: 300px;
+
+    padding: 1.5rem;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    background-color: var(--background);
+
+    border-radius: 25px;
+}
+
+#generated-result #result-image {
+    width: 80%;
+    max-width: 500px;
+
+    height: 250px;
+
+    object-fit: contain;
+
+    border-radius: 15px;
+}
+
+
+/* ================= Image Actions ================= */
+
+.image-actions {
+    width: 100%;
+    max-width: 900px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    gap: 1rem;
+}
+
+.image-actions p {
+    color: var(--main-text);
+
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+
+.action-buttons {
+    display: flex;
+
+    justify-content: center;
+    align-items: center;
+
+    gap: 1rem;
+}
+
+
+/* ================= Edit Button ================= */
+
+.edit-btn {
+    background-color: var(--minor-text);
+    color: var(--background);
+
+    border: none;
+
+    padding: 0.6rem 1.2rem;
+
+    border-radius: 15px;
+
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: bold;
+
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.edit-btn:hover {
+    background-color: var(--main-text);
+}
+
+
+/* ================= Edit Process ================= */
+
+.edit-process {
+    width: 100%;
+    max-width: 900px;
+
+    display: flex;
+
+    justify-content: center;
+    align-items: center;
+
+    gap: 1rem;
+}
+
+
+/* ================= Final Result ================= */
+
+.final-result-box {
+    width: 100%;
+    max-width: 900px;
+
+    min-height: 300px;
+
+    padding: 1.5rem;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    background-color: var(--background);
+
+    border-radius: 25px;
+}
+
+#final-result-image {
+    width: 80%;
+    max-width: 500px;
+
+    height: 250px;
+
+    object-fit: contain;
+
+    border-radius: 15px;
+
+    margin-top: 1rem;
+} 
+
+/* Hide until the first image is generated */
+
+.image-actions,
+.edit-process,
+.final-result-box {
+    display: none;
 }

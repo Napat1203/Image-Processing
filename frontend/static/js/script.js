@@ -186,7 +186,7 @@ const downloadBtn = document.getElementById("download-btn");
 const isWebcamPage = !!webcam;
 const canvas = document.createElement("canvas");
 
-if (generateBtn && resultText && resultImage) {
+if (generateBtn && resultText && resultImage && fileInput) {
 
     generateBtn.addEventListener("click", function () {
 
@@ -261,6 +261,185 @@ if (generateBtn && resultText && resultImage) {
 
             generateBtn.disabled = false;
             generateBtn.textContent = "Generate";
+
+        }, 1500);
+
+    });
+    
+} 
+
+// ================= TXT2img =================
+
+const promptInput = document.getElementById("prompt-input");
+const txtGenerateBtn = document.getElementById("generate-btn");
+
+const generatedResult = document.getElementById("generated-result");
+const imageActions = document.getElementById("image-actions");
+
+const editBtn = document.getElementById("edit-btn");
+const downloadFirstBtn = document.getElementById("download-first-btn");
+
+const editProcess = document.getElementById("edit-process");
+const editGenerateBtn = document.getElementById("edit-generate-btn");
+
+const finalResult = document.getElementById("final-result");
+const finalResultImage = document.getElementById("final-result-image");
+const finalDownloadBtn = document.getElementById("download-btn");
+
+const txtModelBtn = document.getElementById("model-btn");
+const txtModelMenu = document.getElementById("model-menu");
+const txtModelOptions = document.querySelectorAll(".model-option");
+
+let txtSelectedModel = "";
+
+
+// ================= First Generate =================
+if (promptInput) {
+
+    promptInput.addEventListener("click", function () {
+
+        // ถ้ายังไม่มีข้อความ
+        if (this.value === "") {
+            this.setSelectionRange(0, 0);
+        }
+
+    });
+
+}
+
+if (promptInput && txtGenerateBtn) {
+
+    txtGenerateBtn.addEventListener("click", function () {
+
+        const prompt = promptInput.value.trim();
+
+        // Check prompt
+        if (!prompt) {
+            alert("Please enter a prompt.");
+            return;
+        } 
+
+        // Processing
+        txtGenerateBtn.disabled = true;
+        txtGenerateBtn.textContent = "Generating...";
+
+        setTimeout(function () {
+
+            // Demo result
+            // ตอนเชื่อม AI จริง ส่วนนี้ค่อยเปลี่ยนเป็นผลลัพธ์จาก AI
+            const demoImage = "https://via.placeholder.com/500x300?text=LUMA+Generated+Image";
+
+            const generatedImage =
+                document.getElementById("result-image");
+
+            generatedImage.src = demoImage;
+            generatedImage.style.display = "block";
+
+            // Show generated image
+            generatedResult.style.display = "flex";
+
+            // Show actions
+            imageActions.style.display = "flex";
+
+            // Download first image
+            downloadFirstBtn.href = demoImage;
+
+            txtGenerateBtn.disabled = false;
+            txtGenerateBtn.textContent = "Generate";
+
+        }, 1500);
+
+    });
+
+}
+
+
+// ================= Edit Image =================
+
+if (editBtn && editProcess) {
+
+    editBtn.addEventListener("click", function () {
+
+        editProcess.style.display = "flex";
+
+        editBtn.style.display = "none";
+
+    });
+
+}
+
+
+// ================= TXT2img Model =================
+
+if (txtModelBtn && txtModelMenu) {
+
+    txtModelBtn.addEventListener("click", function () {
+
+        if (txtModelMenu.style.display === "block") {
+
+            txtModelMenu.style.display = "none";
+
+        } else {
+
+            txtModelMenu.style.display = "block";
+
+        }
+
+    });
+
+
+    txtModelOptions.forEach(function (option) {
+
+        option.addEventListener("click", function () {
+
+            txtSelectedModel = option.textContent;
+
+            txtModelBtn.textContent =
+                txtSelectedModel + " ▼";
+
+            txtModelMenu.style.display = "none";
+
+        });
+
+    });
+
+}
+
+
+// ================= Edit Generate =================
+
+if (editGenerateBtn) {
+
+    editGenerateBtn.addEventListener("click", function () {
+
+        // Check model
+        if (!txtSelectedModel) {
+
+            alert("Please select an AI model.");
+
+            return;
+
+        }
+
+        editGenerateBtn.disabled = true;
+        editGenerateBtn.textContent = "Generating...";
+
+
+        setTimeout(function () {
+
+            // Demo edited result
+            // ตอนเชื่อม AI จริง ส่วนนี้ค่อยเปลี่ยนเป็นผลลัพธ์จาก AI
+            const editedImage =
+                "https://via.placeholder.com/500x300?text=LUMA+Edited+Image";
+
+            finalResultImage.src = editedImage;
+
+            finalResult.style.display = "flex";
+
+            finalDownloadBtn.href = editedImage;
+
+            editGenerateBtn.disabled = false;
+            editGenerateBtn.textContent = "Generate";
 
         }, 1500);
 
