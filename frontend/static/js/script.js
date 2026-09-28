@@ -186,29 +186,9 @@ const downloadBtn = document.getElementById("download-btn");
 const isWebcamPage = !!webcam;
 const canvas = document.createElement("canvas");
 
-if (generateBtn && resultText && resultImage && fileInput) {
+if (generateBtn && resultText && resultImage) {
 
-    generateBtn.addEventListener("click", function () {
-
-        // Check image
-        if (!isWebcamPage && !fileInput.files.length) {
-            resultText.textContent = "Please upload an image.";
-            resultImage.style.display = "none";
-            return;
-        }
-
-        // Check webcam
-        if (isWebcamPage && !cameraStream) {
-            resultText.textContent = "Please start the webcam.";
-            resultImage.style.display = "none";
-            return;
-        }
-
-        if (isWebcamPage && !isFrozen) {
-            resultText.textContent = "Please stop the webcam first.";
-            resultImage.style.display = "none";
-            return;
-        }
+    generateBtn.addEventListener("click", async function () {
 
         // Check model
         if (!selectedModel) {
@@ -217,56 +197,114 @@ if (generateBtn && resultText && resultImage && fileInput) {
             return;
         }
 
-        // Processing
+        // ================= Prepare image =================
+
+        let imageBlob;
+
+        // Image page
+        if (!isWebcamPage) {
+
+            if (!fileInput.files.length) {
+                resultText.textContent = "Please upload an image.";
+                resultImage.style.display = "none";
+                return;
+            }
+
+            imageBlob = fileInput.files[0];
+
+        }
+
+        // Webcam page
+        else {
+
+            if (!cameraStream) {
+                resultText.textContent = "Please start the webcam.";
+                resultImage.style.display = "none";
+                return;
+            }
+
+            if (!isFrozen) {
+                resultText.textContent = "Please stop the webcam first.";
+                resultImage.style.display = "none";
+                return;
+            }
+
+            canvas.width = webcam.videoWidth;
+            canvas.height = webcam.videoHeight;
+
+            const ctx = canvas.getContext("2d");
+
+            ctx.drawImage(
+                webcam,
+                0,
+                0,
+                canvas.width,
+                canvas.height
+            );
+
+            imageBlob = await new Promise(function (resolve) {
+                canvas.toBlob(resolve, "image/png");
+            });
+        }
+
+        // ================= Send to AI =================
+
         resultText.textContent = "Processing...";
         resultImage.style.display = "none";
 
         generateBtn.disabled = true;
         generateBtn.textContent = "Processing...";
 
-        setTimeout(function () {
+        try {
 
-            resultText.textContent = "";
+            const formData = new FormData();
 
-            //Webcam 
-            if (isWebcamPage){
+            formData.append("image", imageBlob);
+            formData.append("model", selectedModel);
 
-                canvas.width = webcam.videoWidth;
-                canvas.height = webcam.videoHeight;
+            const response = await fetch("/api/process-image", {
+                method: "POST",
+                body: formData
+            });
 
-                const ctx = canvas.getContext("2d");
+            const data = await response.json();
 
-                ctx.drawImage(
-                    webcam,
-                    0,
-                    0,
-                    canvas.width,
-                    canvas.height
+            if (!response.ok || !data.success) {
+                throw new Error(
+                    data.message || "AI processing failed."
                 );
-
-                resultImage.src = canvas.toDataURL("image/png");
-
             }
 
-            //Image Upload
-            else {
-                resultImage.src = imagePreview.src;
+            // ================= AI Success =================
+
+            resultText.textContent = data.note || "Processing completed.";
+
+            // ตอนนี้ Backend ยังไม่ได้ส่งรูปผลลัพธ์กลับมา
+            resultImage.style.display = "none";
+
+            if (downloadBtn) {
+                downloadBtn.style.display = "none";
             }
 
-            resultImage.style.display = "block";
-            if (downloadBtn){
-                downloadBtn.href = resultImage.src;
-                downloadBtn.style.display = "inline-block";
-            }
+        } catch (error) {
+
+            console.error("AI processing error:", error);
+
+            resultText.textContent =
+                error.message || "Something went wrong.";
+
+            resultImage.style.display = "none";
+
+        } finally {
 
             generateBtn.disabled = false;
             generateBtn.textContent = "Generate";
 
-        }, 1500);
+        }
 
     });
-    
-} 
+
+}
 
 // ================= TXT2img =================
 
