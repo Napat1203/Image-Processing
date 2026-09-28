@@ -105,3 +105,22 @@ def erode_mask(mask):
             if inside:
                 shrunk[y, x] = 255
     return shrunk
+
+def color_threshold(image, color, max_diff=30):
+    """Mark every pixel close to a colour, anywhere in the image.
+    Neighbours are ignored. Each channel must fall within max_diff of
+    the target, so a grey pixel is not treated as green just because
+    it is equally bright.
+    """
+    image = np.asarray(image)
+    if image.ndim != 3:
+        raise SegmentError("Need a colour image")
+    pixels = image[:, :, :3].astype(np.int16)
+    target = np.array(color, dtype=np.int16)
+    if target.shape != (3,):
+        raise SegmentError("Color must be red, green, and blue")
+    distance = np.max(np.abs(pixels - target), axis=2)
+    mask = np.zeros(pixels.shape[:2], dtype=np.uint8)
+    mask[distance <= max_diff] = 255
+    return mask
+
