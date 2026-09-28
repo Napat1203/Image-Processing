@@ -124,3 +124,40 @@ def color_threshold(image, color, max_diff=30):
     mask[distance <= max_diff] = 255
     return mask
 
+def grow_part(image, seed_x, seed_y, max_seed=90, max_step=18):
+    """Grow one coloured part from a click.
+
+    The new pixel must stay within max_seed of the clicked colour, and
+    within max_step of the pixel it spreads from. A small step follows
+    a fold but stops at an edge, so a shirt does not run into skin.
+    """
+    image = np.asarray(image)
+    if image.ndim != 3:
+        raise SegmentError("Need a colour image")
+    height, width = image.shape[:2]
+    if not (0 <= seed_x < width and 0 <= seed_y < height):
+        raise SegmentError("Seed is outside the image")
+    pixels = image[:, :, :3].astype(np.int16)
+    seed = pixels[seed_y, seed_x]
+    mask = np.zeros((height, width), dtype=np.uint8)
+    mask[seed_y, seed_x] = 255
+    queue = [(seed_x, seed_y)]
+    head = 0
+    while head < len(queue):
+        x, y = queue[head]
+        head += 1
+        here = pixels[y, x]
+        for dx, dy in NEIGHBOURS_4:
+            nx, ny = x + dx, y + dy
+            if nx < 0 or nx >= width or ny < 0 or ny >= height:
+                continue
+            if mask[ny, nx] == 255:
+                continue
+            there = pixels[ny, nx]
+            if np.max(np.abs(there - seed)) > max_seed:
+                continue
+            if np.max(np.abs(there - here)) > max_step:
+                continue
+            mask[ny, nx] = 255
+            queue.append((nx, ny))
+    return mask
