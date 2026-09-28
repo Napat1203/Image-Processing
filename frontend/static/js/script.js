@@ -409,7 +409,7 @@ if (editBtn && editProcess) {
 
 // ================= TXT2img Model =================
 
-if (txtModelBtn && txtModelMenu) {
+if (promptInput && txtModelBtn && txtModelMenu) {
 
     txtModelBtn.addEventListener("click", function () {
 
