@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <!-- Link to the style file -->
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+        <!--Help show thai correct characters-->
+        <meta charset="UTF-8">
+        <!--Help show fit page-->
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <!--Title of the page-->
+        <title>LUMA</title>
+    </head>
+
+    <body>
+
+        <header class="navbar">
+            <!-- Logo -->
+            <div class="logo">
+                LUMA
+            </div>
+
+            <!-- Navigation links -->
+            <nav class="nav-menu">
+                <a href="{{ url_for('home') }}">Home</a>
+                <a href="{{ url_for('image')}}" class="active">AI</a>
+                <a href="{{ url_for('about')}}">About</a>
+                {% if user and user['role'] in ['admin', 'super'] %}
+                    <a href="{{ url_for('admin') }}">Admin</a>
+                {% endif %}
+                <a href="{{ url_for('logout') }}">Logout</a>
+            </nav>
+
+            <!--Theme btn-->
+            <label class="theme-toggle">
+                <input type="checkbox"> <!--get status-->
+                <span class="toggle-slider"></span> <!--output of the toggle-->
+            </label>
+        </header>
+
+        <main class="ai-page">
+            <section class="workspace">
+                <div class="welcome-box">
+                    <h1>Welcome, User!</h1>
+                    <p>Let's create something with LUMA.</p>
+                </div> 
+
+                <div class="ai-tabs">
+                    <a href="{{ url_for('image') }}" class="ai-tab">
+                        Image
+                    </a>
+
+                    <a href="{{ url_for('webcam') }}" class="ai-tab">
+                        Webcam
+                    </a> 
+
+                    <a href="{{ url_for('txt2img') }}" class="ai-tab active">
+                        TXT2img
+                    </a>
+                </div>
+
+                <div class="txt2img-work">
+                    
+                    <div class="prompt-box">
+                        <label for="prompt-input">Prompt</label>
+
+                        <textarea 
+                            id="prompt-input"
+                            placeholder="Describe the image you want to create. . ."
+                        ></textarea>
+
+                        <button class="generate-btn" id="generate-btn">
+                            Generate
+                        </button>
+                    </div>
+
+                    <div class="result-box" id="generated-result">
+                        <p id="result-text">Generated Image</p>
+
+                        <img id="result-image" src="" alt="Generated Image">
+
+                    </div> 
+
+                    <div class="image-actions" id="image-actions">
+                        <p>Would you like to edit this image?</p>
+
+                        <div class="action-buttons">
+                            <button class="edit-btn" id="edit-btn">Edit Image</button>
+                            <a  id="download-first-btn"
+                                class="download-btn"
+                                href="#"
+                                download="luma-result.png"
+                            >
+                                Download
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="edit-process" id="edit-process">
+                        <div class="model-select">
+                            <button class="model-btn" id="model-btn">
+                                Select AI Model ▼
+                            </button>
+
+                            <div class="model-menu" id="model-menu">
+                                <button class="model-option">Model 1</button>
+                                <button class="model-option">Model 2</button>
+                                <button class="model-option">Model 3</button>
+                            </div>
+
+                        </div>
+
+                        <button class="generate-btn" id="edit-generate-btn">
+                            Generate
+                        </button>
+                    </div>
+
+                    <div class="final-result-box" id="final-result">
+                        <p>Final Result</p>
+
+                        <img id="final-result-image" src="" alt="Final AI Result">
+                        <a id="download-btn"
+                            class="download-btn"
+                            href=""
+                            download="luma-final-result.png">Download
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </section>
+        </main>
+
+        <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+    </body>
+
+</html>

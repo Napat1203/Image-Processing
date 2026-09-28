@@ -39,19 +39,25 @@
 
         <main class="ai-page">
 
-            <aside class="ai-sidebar">
-                <h2>Mode</h2>
-                
-                <a href="{{ url_for('image')}}" class="mode-image">Image</a>
-                <a href="{{ url_for('webcam')}}" class="mode-active">Webcam</a>
-                <a href="{{ url_for('logout') }}" class="logout">Logout</a>
-            </aside>
-
             <section class="workspace">
 
     <div class="welcome-box">
-        <h1>Webcam</h1>
-        <p>Use your webcam with LUMA.</p>
+        <h1>Welcome, User!</h1>
+        <p>Let's create something with LUMA.</p>
+    </div> 
+
+    <div class="ai-tabs">
+        <a href="{{ url_for('image') }}" class="ai-tab">
+            Image
+        </a>
+
+        <a href="{{ url_for('webcam') }}" class="ai-tab active">
+            Webcam
+        </a> 
+
+        <a href="{{ url_for('txt2img') }}" class="ai-tab">
+            TXT2img
+        </a>
     </div>
 
     <div class="webcam-work">

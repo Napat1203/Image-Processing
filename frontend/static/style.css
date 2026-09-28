@@ -228,104 +228,57 @@ body {
 
 .ai-page {
     min-height: calc(100vh - 70px);
-    display: flex;
-    gap: 1rem;
-    padding: 1rem;
+    padding: 1rem 4.5%;
     overflow: hidden;
 }
-
-
 /* =========================================================
-   AI Sidebar
+   AI Tabs
    ========================================================= */
 
-.ai-sidebar {
-    width: 220px;
-    background-color: var(--navbar);
-    padding: 2rem;
+.ai-tabs { 
     display: flex;
-    flex-direction: column;
-    border-radius: 30px;
+    align-items: flex-end;
+    gap: 0;
+    margin-left: 3%;
+    margin-top: 1rem;
+    margin-bottom: 0;
+    position: relative;
+    z-index: 2;
 }
 
-
-/* Sidebar title */
-
-.ai-sidebar h2 {
-    text-align: center;
-    font-size: 1.25rem;
-    margin-bottom: 1rem;
-}
-
-
-/* Image + Webcam */
-
-.ai-sidebar .mode-image,
-.ai-sidebar .mode-webcam {
-    color: var(--main-text);
+.ai-tab {
+    width: 155px;
+    padding: 0.65rem 1rem;
+    background-color: var(--navbar);
+    color: var(--minor-text);
     text-decoration: none;
     text-align: center;
-    font-size: 1.4rem;
+    font-size: 1.1rem;
     font-weight: bold;
-    padding: 1.2rem;
-    margin-bottom: 1rem;
-    border-radius: 25px;
+    border-radius: 30px 30px 0 0;
+    transition: 0.3s;
 }
 
-
-/* Selected mode */
-
-.ai-sidebar .mode-active {
-    background-color: var(--background);
-    text-align: center;
-    font-size: 1.4rem;
-    font-weight: bold;
-    padding: 1.2rem;
-    margin-bottom: 1rem;
-    border-radius: 25px;
-    text-decoration: none;
-    color: var(--minor-text);
+.ai-tab:hover{
+    background-color: var(--minor-text);
+    color: var(--background);
 }
 
-
-/* Hover */
-
-.ai-sidebar .mode-image:hover,
-.ai-sidebar .mode-webcam:hover {
-    background-color: var(--background);
-    color: var(--minor-text);
+.ai-tab.active {
+    background-color: var(--main-text);
+    color: var(--background);
 }
-
-
-/* Logout */
-
-.ai-sidebar .logout {
-    color: var(--main-text);
-    text-decoration: none;
-    font-size: 1.4rem;
-    font-weight: bold;
-    margin-top: auto;
-    padding: 0.5rem 1rem;
-}
-
-
-.ai-sidebar .logout:hover {
-    background-color: var(--background);
-    color: var(--minor-text);
-    border-radius: 15px;
-}
-
 
 /* =========================================================
    AI Workspace
    ========================================================= */
 
 .workspace {
-    flex: 1; 
+    width: 100%;
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    gap: 0;
 }
 
 
@@ -358,15 +311,19 @@ body {
    ========================================================= */
 
 .ai-work {
-    flex: 1;
-    background-color: var(--navbar);
+    width: 100%;
+    min-height: 415px;
+
+    background-color: var(--navbar); 
     border-radius: 30px;
-    padding: 1.5rem;
+
+    padding: 2.5rem 10%;
+
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1rem;
-    min-height: 0;
+
+    gap: 3rem;
 }
 
 
@@ -887,4 +844,241 @@ body {
 
 .admin-table tr:hover {
     background-color: var(--background);
+} 
+
+/* =========================================================
+   TXT2img
+   ========================================================= */
+.txt2img-work {
+    width: 100%;
+    background-color: var(--navbar);
+    border-radius: 30px;
+
+    padding: 2rem 8%;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    gap: 1.5rem;
+}
+
+
+/* ================= Prompt Box ================= */
+
+.prompt-box {
+    width: 100%;
+    max-width: 900px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    gap: 0.8rem;
+}
+
+.prompt-box label {
+    width: 100%;
+
+    color: var(--main-text);
+
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+#prompt-input {
+    width: 100%;
+    min-height: 120px;
+    padding: 1rem;
+
+    background-color: var(--background);
+    color: var(--main-text);
+
+    border: none;
+    border-radius: 20px;
+
+    font-family: inherit;
+    font-size: 0.9rem;
+
+    text-align: left !important; 
+    vertical-align: top;
+    resize: vertical;
+    outline: none; 
+
+    direction: ltr;
+}
+
+#prompt-input::placeholder {
+    color: var(--minor-text);
+}
+
+
+/* ================= Generate Button ================= */
+
+.prompt-box .generate-btn {
+    align-self: flex-end;
+
+    background-color: var(--minor-text);
+    color: var(--background);
+
+    border: none;
+
+    padding: 0.7rem 1.5rem;
+
+    border-radius: 15px;
+
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: bold;
+
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.prompt-box .generate-btn:hover {
+    background-color: var(--main-text);
+}
+
+
+/* ================= Generated Result ================= */
+
+#generated-result {
+    width: 100%;
+    max-width: 900px;
+
+    min-height: 300px;
+
+    padding: 1.5rem;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    background-color: var(--background);
+
+    border-radius: 25px;
+}
+
+#generated-result #result-image {
+    width: 80%;
+    max-width: 500px;
+
+    height: 250px;
+
+    object-fit: contain;
+
+    border-radius: 15px;
+}
+
+
+/* ================= Image Actions ================= */
+
+.image-actions {
+    width: 100%;
+    max-width: 900px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    gap: 1rem;
+}
+
+.image-actions p {
+    color: var(--main-text);
+
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+
+.action-buttons {
+    display: flex;
+
+    justify-content: center;
+    align-items: center;
+
+    gap: 1rem;
+}
+
+
+/* ================= Edit Button ================= */
+
+.edit-btn {
+    background-color: var(--minor-text);
+    color: var(--background);
+
+    border: none;
+
+    padding: 0.6rem 1.2rem;
+
+    border-radius: 15px;
+
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: bold;
+
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.edit-btn:hover {
+    background-color: var(--main-text);
+}
+
+
+/* ================= Edit Process ================= */
+
+.edit-process {
+    width: 100%;
+    max-width: 900px;
+
+    display: flex;
+
+    justify-content: center;
+    align-items: center;
+
+    gap: 1rem;
+}
+
+
+/* ================= Final Result ================= */
+
+.final-result-box {
+    width: 100%;
+    max-width: 900px;
+
+    min-height: 300px;
+
+    padding: 1.5rem;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    background-color: var(--background);
+
+    border-radius: 25px;
+}
+
+#final-result-image {
+    width: 80%;
+    max-width: 500px;
+
+    height: 250px;
+
+    object-fit: contain;
+
+    border-radius: 15px;
+
+    margin-top: 1rem;
+} 
+
+/* Hide until the first image is generated */
+
+.image-actions,
+.edit-process,
+.final-result-box {
+    display: none;
 }
