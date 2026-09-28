@@ -707,6 +707,7 @@ body {
 /* ======= model select ========*/
 .model-select {
     position: relative;
+    z-index: 20;
 }
 
 .model-menu {
@@ -715,27 +716,30 @@ body {
     top: calc(100% + 0.5rem);
     left: 0;
     width: 100%;
-    background-color: var(--background);
+    background-color: var(--minor-text);
     border-radius: 15px;
     padding: 0.4rem;
-    z-index: 10;
+    z-index: 30;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .model-menu button {
     width: 100%;
-    background: none;
+    min-height: 32px;
+    background: var(--minor-text);
     border: none;
-    color: var(--main-text);
+    color: var(--background);
     padding: 0.6rem;
     border-radius: 10px;
     font-family: inherit;
     font-size: 0.7rem;
     cursor: pointer;
+    box-sizing: border-box;
 }
 
 .model-menu button:hover {
-    background-color: var(--navbar);
-} 
+    background-color: var(--main-text);
+}
 
 /* ================= Admin ================= */
 
