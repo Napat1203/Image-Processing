@@ -21,6 +21,7 @@ from backend.db import (   # import ฟังก์ชันที่ใช้�
     init_db,               # สร้างและเตรียม database
     get_user_by_username,  # ค้นหา user จาก username
     create_user,           # สร้าง user ใหม่
+    list_users,
 )
 
 from ai.process import process  # import ฟังก์ชัน AI สำหรับประมวลผลรูปภาพ
@@ -165,7 +166,7 @@ def admin():  # ฟังก์ชันแสดงหน้า Admin
     return render_template(  # แสดงหน้า Admin
         "admin.html",        # ใช้หน้า admin.html
         user=user,           # ส่งข้อมูล user ไปให้หน้าเว็บ
-        users=[],            # ส่งข้อมูล users ตามโครงสร้างเดิม
+        users=list_users(),            # ส่งข้อมูล users ตามโครงสร้างเดิม
         total=0,             # ส่งจำนวน user ตามโครงสร้างเดิม
         error=None,          # ไม่มี error
         owner=user.get("role") == "super"  # ตรวจสอบว่าเป็นเจ้าของระบบหรือไม่
