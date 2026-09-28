@@ -32,3 +32,32 @@ def process(image_bytes, user_id, model=None):
         "note": "(Demo)Image processed successfully!",
         "image_bytes": image_bytes,
     }
+
+    if model == "controlnet":
+        if not prompt:
+            return {
+                "user_id": user_id,
+                "status": "error",
+                "note": "Enter a prompt first",
+                "image_bytes": b"",
+            }
+        from ai.controlnet import generate_from_pose
+
+        picture = generate_from_pose(
+            prompt,
+            image_bytes,
+            already_skeleton=already_skeleton,
+        )
+        return {
+            "user_id": user_id,
+            "status": "ok",
+            "note": "Pose image generated",
+            "image_bytes": base64.b64decode(picture),
+        }
+
+    return {
+        "user_id": user_id,
+        "status": "ok",
+        "note": "(Demo)Image processed successfully!",
+        "image_bytes": image_bytes,
+    }
