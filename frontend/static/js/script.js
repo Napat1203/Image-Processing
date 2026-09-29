@@ -134,9 +134,9 @@ if (modelBtn && modelMenu) {
 
         option.addEventListener("click", function () {
 
-            selectedModel = option.textContent;
+            selectedModel = option.dataset.model || option.textContent;
 
-            modelBtn.textContent = selectedModel + " ▼";
+            modelBtn.textContent = option.textContent + " ▼";
 
             modelMenu.style.display = "none";
 
@@ -182,7 +182,7 @@ if (chooseFile && fileInput && fileName) {
 const generateBtn = document.getElementById("generate-btn");
 const resultText = document.getElementById("result-text");
 const resultImage = document.getElementById("result-image");
-const downloadBtn = document.getElementById("download-btn");
+const downloadBtn = document.getElementById("image-download-btn");
 const isWebcamPage = !!webcam;
 const canvas = document.createElement("canvas");
 
@@ -279,11 +279,14 @@ if (generateBtn && resultText && resultImage) {
 
             resultText.textContent = data.note || "Processing completed.";
 
-            // ตอนนี้ Backend ยังไม่ได้ส่งรูปผลลัพธ์กลับมา
-            resultImage.style.display = "none";
+            if (data.image) {
+                resultImage.src = "data:image/png;base64," + data.image;
+                resultImage.style.display = "block";
+            }
 
             if (downloadBtn) {
-                downloadBtn.style.display = "none";
+                downloadBtn.href = "data:image/png;base64," + data.image;
+                downloadBtn.style.display = "inline-flex";
             }
 
         } catch (error) {
@@ -425,10 +428,10 @@ if (txtModelBtn && txtModelMenu) {
 
         option.addEventListener("click", function () {
 
-            txtSelectedModel = option.textContent;
+            txtSelectedModel = option.dataset.model || option.textContent;
 
             txtModelBtn.textContent =
-                txtSelectedModel + " ▼";
+                option.textContent + " ▼";
 
             txtModelMenu.style.display = "none";
 
