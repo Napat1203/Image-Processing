@@ -1,5 +1,6 @@
 import sys  # ใช้จัดการ Python path เพื่อให้ import ไฟล์ในโปรเจกต์ได้
 from pathlib import Path  # ใช้จัดการ path ของโฟลเดอร์และไฟล์
+import base64 # ใช้เข้ารหัสและถอดรหัสข้อมูลเป็นข้อความ base64
 
 from flask import (
     Flask,     # ใช้สร้าง Flask application
@@ -250,6 +251,10 @@ def process_image():  # ฟังก์ชันรับรูปจากห�
     image = request.files.get("image")  # รับรูปภาพจากหน้าเว็บ
     model = request.form.get("model") or "stub"  # รับชื่อ AI model
 
+    # ชั่วคราวสำหรับทดสอบระบบ: Model 1 = Remove Background
+    if model == "Model 1":
+        model = "remove-background"
+
     if not image:              # ตรวจสอบว่ามีรูปภาพหรือไม่
         return jsonify({       # ส่งข้อความแจ้งเตือนกลับไป
             "success": False,  # บอกว่าการทำงานไม่สำเร็จ
@@ -258,12 +263,15 @@ def process_image():  # ฟังก์ชันรับรูปจากห�
 
     data = image.read()  # อ่านข้อมูลรูปภาพเป็น bytes
 
-    result = process(data, user["id"])  # ส่งรูปและ user_id ไปให้ AI โดยตรง
+    result = process(data, user["id"], model)  # ส่งรูป user_id และชื่อ model ไปให้ AI
 
     if result.get("status") == "ok":  # ตรวจสอบว่า AI ประมวลผลสำเร็จหรือไม่
+        image_base64 = base64.b64encode(result["image_bytes"]).decode("utf-8")
+        
         return jsonify({      # ส่งผลลัพธ์กลับไปให้หน้าเว็บ
             "success": True,  # บอกว่าประมวลผลสำเร็จ
-            "note": result.get("note")  # ส่งข้อความผลลัพธ์
+            "note": result.get("note"),  # ส่งข้อความผลลัพธ์
+            "image": image_base64  # ส่งภาพที่ประมวลผลแล้วกลับไปให้ Frontend
         }), 200  # ส่ง HTTP status 200
 
     return jsonify({       # ส่งผลลัพธ์กรณีประมวลผลไม่สำเร็จ
