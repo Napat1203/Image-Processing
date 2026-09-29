@@ -1,0 +1,106 @@
+"""Check the AI helpers without calling Forge or loading a model."""
+
+import unittest
+
+import numpy as np
+
+from ai.controlnet import generate_from_pose
+from ai.forge_client import ForgeError, prepare_prompt
+from ai.process import process
+from ai.remove_background import remove_background
+from ai.segment import color_threshold, grow_part, recolor
+
+
+class SegmentTests(unittest.TestCase):
+    def test_grey_is_not_green(self):
+        image = np.zeros((1, 2, 3), dtype=np.uint8)
+        image[0, 0] = (85, 85, 85)
+        image[0, 1] = (0, 255, 0)
+        mask = color_threshold(image, (0, 255, 0), max_diff=10)
+        self.assertEqual(int(mask[0, 0]), 0)
+        self.assertEqual(int(mask[0, 1]), 255)
+
+    def test_grow_part_stops_at_a_different_colour(self):
+        image = np.full((1, 3, 3), 250, dtype=np.uint8)
+        image[0, 2] = (0, 0, 255)
+        mask = grow_part(image, 0, 0)
+        self.assertEqual(int(mask[0, 0]), 255)
+        self.assertEqual(int(mask[0, 1]), 255)
+        self.assertEqual(int(mask[0, 2]), 0)
+
+    def test_recolor_keeps_dark_pixels_dark(self):
+        image = np.array([[[255, 255, 255], [10, 20, 30]]], dtype=np.uint8)
+        mask = np.array([[255, 0]], dtype=np.uint8)
+        painted = recolor(image, mask, (40, 170, 70))
+        self.assertEqual(tuple(int(v) for v in painted[0, 0]), (40, 170, 70))
+        self.assertEqual(tuple(int(v) for v in painted[0, 1]), (10, 20, 30))
+
+
+class PromptTests(unittest.TestCase):
+    def test_english_is_unchanged(self):
+        self.assertEqual(prepare_prompt("a cat"), "a cat")
+
+    def test_thai_uses_the_given_translator(self):
+        self.assertEqual(prepare_prompt("แมว", translator=lambda text: "cat"), "cat")
+
+    def test_empty_prompt_is_rejected(self):
+        with self.assertRaises(ForgeError):
+            prepare_prompt("  ")
+
+
+class PoseTests(unittest.TestCase):
+    def test_photo_and_skeleton_choose_different_modules(self):
+        class FakeResponse:
+            status_code = 200
+
+            def json(self):
+                return {"images": ["POSE"]}
+
+        class FakeSession:
+            def __init__(self):
+                self.payloads = []
+
+            def post(self, url, json=None, timeout=None):
+                self.payloads.append(json)
+                return FakeResponse()
+
+        fake = FakeSession()
+        generate_from_pose("a cat sitting", b"\x89PNG", session=fake)
+        generate_from_pose(
+            "a cat sitting",
+            b"\x89PNG",
+            already_skeleton=True,
+            session=fake,
+        )
+        photo = fake.payloads[0]["alwayson_scripts"]["ControlNet"]["args"][0]
+        skeleton = fake.payloads[1]["alwayson_scripts"]["ControlNet"]["args"][0]
+        self.assertEqual(photo["module"], "openpose")
+        self.assertEqual(skeleton["module"], "none")
+        self.assertEqual(photo["model"], skeleton["model"])
+
+    def test_empty_pose_image_is_rejected(self):
+        with self.assertRaises(ForgeError):
+            generate_from_pose("a cat", b"")
+
+
+class ProcessTests(unittest.TestCase):
+    def test_unknown_model_returns_the_same_bytes(self):
+        result = process(b"abc", 7)
+        self.assertEqual(result["status"], "ok")
+        self.assertEqual(result["image_bytes"], b"abc")
+
+    def test_remove_background_uses_the_cut_image(self):
+        import ai.remove_background as bg
+
+        bg.remove_background = lambda image_bytes: b"PNG"
+        result = process(b"abc", 7, model="remove-background")
+        self.assertEqual(result["image_bytes"], b"PNG")
+        self.assertEqual(result["status"], "ok")
+
+    def test_empty_image_is_rejected(self):
+        with self.assertRaises(ValueError):
+            remove_background(b"")
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -161,3 +161,22 @@ def grow_part(image, seed_x, seed_y, max_seed=90, max_step=18):
             mask[ny, nx] = 255
             queue.append((nx, ny))
     return mask
+
+def recolor(image, mask, color):
+    """Paint masked pixels in a new colour and keep the old brightness.
+
+    Each pixel is scaled by how bright it already was, so a fold stays
+    darker than the cloth around it. Pixels outside the mask are unchanged.
+    """
+    image = np.asarray(image)
+    if image.ndim != 3:
+        raise SegmentError("Need a colour image")
+    color = np.asarray(color, dtype=np.float32)
+    if color.shape != (3,):
+        raise SegmentError("Color must be red, green, and blue")
+    pixels = image[:, :, :3].astype(np.float32)
+    brightness = pixels.mean(axis=2, keepdims=True) / 255
+    painted = np.clip(color * brightness, 0, 255).astype(np.uint8)
+    keep = np.asarray(mask) != 255
+    painted[keep] = pixels[:, :, :3].astype(np.uint8)[keep]
+    return painted
