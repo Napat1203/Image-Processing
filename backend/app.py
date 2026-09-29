@@ -251,10 +251,6 @@ def process_image():  # ฟังก์ชันรับรูปจากห�
     image = request.files.get("image")  # รับรูปภาพจากหน้าเว็บ
     model = request.form.get("model") or "stub"  # รับชื่อ AI model
 
-    # ชั่วคราวสำหรับทดสอบระบบ: Model 1 = Remove Background
-    if model == "Model 1":
-        model = "remove-background"
-
     if not image:              # ตรวจสอบว่ามีรูปภาพหรือไม่
         return jsonify({       # ส่งข้อความแจ้งเตือนกลับไป
             "success": False,  # บอกว่าการทำงานไม่สำเร็จ
