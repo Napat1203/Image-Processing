@@ -309,7 +309,7 @@ if (generateBtn && resultText && resultImage) {
 // ================= TXT2img =================
 
 const promptInput = document.getElementById("prompt-input");
-const txtGenerateBtn = document.getElementById("generate-btn");
+const txtGenerateBtn = document.getElementById("txt-generate-btn");
 
 const generatedResult = document.getElementById("generated-result");
 const imageActions = document.getElementById("image-actions");
@@ -324,9 +324,9 @@ const finalResult = document.getElementById("final-result");
 const finalResultImage = document.getElementById("final-result-image");
 const finalDownloadBtn = document.getElementById("download-btn");
 
-const txtModelBtn = document.getElementById("model-btn");
-const txtModelMenu = document.getElementById("model-menu");
-const txtModelOptions = document.querySelectorAll(".model-option");
+const txtModelBtn = document.getElementById("txt-model-btn");
+const txtModelMenu = document.getElementById("txt-model-menu");
+const txtModelOptions = document.querySelectorAll(".txt-model-option");
 
 let txtSelectedModel = "";
 
@@ -377,10 +377,14 @@ if (promptInput && txtGenerateBtn) {
             generatedResult.style.display = "flex";
 
             // Show actions
-            imageActions.style.display = "flex";
+            imageActions.style.display = "flex"; 
+
+            // Show Edit button
+            editBtn.style.display = "inline-flex";
 
             // Download first image
-            downloadFirstBtn.href = demoImage;
+            downloadFirstBtn.href = demoImage; 
+            downloadFirstBtn.style.display = "inline-flex";
 
             txtGenerateBtn.disabled = false;
             txtGenerateBtn.textContent = "Generate";
@@ -395,36 +399,27 @@ if (promptInput && txtGenerateBtn) {
 // ================= Edit Image =================
 
 if (editBtn && editProcess) {
-
     editBtn.addEventListener("click", function () {
-
         editProcess.style.display = "flex";
-
         editBtn.style.display = "none";
 
+        downloadFirstBtn.style.display = "none";
     });
-
 }
-
 
 // ================= TXT2img Model =================
 
-if (promptInput && txtModelBtn && txtModelMenu) {
+if (txtModelBtn && txtModelMenu) {
 
     txtModelBtn.addEventListener("click", function () {
 
         if (txtModelMenu.style.display === "block") {
-
             txtModelMenu.style.display = "none";
-
         } else {
-
             txtModelMenu.style.display = "block";
-
         }
 
     });
-
 
     txtModelOptions.forEach(function (option) {
 
@@ -442,8 +437,6 @@ if (promptInput && txtModelBtn && txtModelMenu) {
     });
 
 }
-
-
 // ================= Edit Generate =================
 
 if (editGenerateBtn) {
@@ -471,10 +464,10 @@ if (editGenerateBtn) {
                 "https://via.placeholder.com/500x300?text=LUMA+Edited+Image";
 
             finalResultImage.src = editedImage;
-
             finalResult.style.display = "flex";
 
             finalDownloadBtn.href = editedImage;
+            finalDownloadBtn.style.display = "inline-flex";
 
             editGenerateBtn.disabled = false;
             editGenerateBtn.textContent = "Generate";

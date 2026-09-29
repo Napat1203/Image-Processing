@@ -382,8 +382,10 @@ body {
     border-radius: 15px;
     font-size: 0.7rem;
     font-weight: bold;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
 }
-
 .download-btn:hover {
     background-color: var(--main-text);
 }
@@ -716,6 +718,9 @@ body {
     top: calc(100% + 0.5rem);
     left: 0;
     width: 100%;
+    max-height: 150px;
+    overflow-y: auto;
+
     background-color: var(--minor-text);
     border-radius: 15px;
     padding: 0.4rem;
@@ -1009,21 +1014,16 @@ body {
 /* ================= Edit Button ================= */
 
 .edit-btn {
+    display: none;
+    margin-top: 1rem;
     background-color: var(--minor-text);
     color: var(--background);
-
-    border: none;
-
+    text-decoration: none;
     padding: 0.6rem 1.2rem;
-
     border-radius: 15px;
-
-    font-family: inherit;
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     font-weight: bold;
 
-    cursor: pointer;
-    transition: 0.3s;
 }
 
 .edit-btn:hover {
@@ -1085,4 +1085,43 @@ body {
 .edit-process,
 .final-result-box {
     display: none;
+} 
+
+/* txt-modle-menu */ 
+
+.model-select {
+    position: relative;
+}
+
+.txt-model-menu {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 0.5rem);
+    left: 0;
+    width: 100%;
+    max-height: 150px;
+    overflow-y: auto;
+    background-color: var(--minor-text);
+    border-radius: 15px;
+    padding: 0.4rem;
+    z-index: 30;
+}
+
+.txt-model-menu .txt-model-option {
+    display: block;
+    width: 100%;
+    min-height: 32px;
+    background: var(--minor-text);
+    border: none;
+    color: var(--background);
+    padding: 0.6rem;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 0.7rem;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.txt-model-menu .txt-model-option:hover {
+    background-color: var(--main-text);
 }
