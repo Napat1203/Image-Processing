@@ -1,5 +1,6 @@
 """Check the AI helpers without calling Forge or loading a model."""
 
+import base64
 import unittest
 
 import numpy as np
@@ -101,6 +102,26 @@ class ProcessTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             remove_background(b"")
 
+    def test_controlnet_without_prompt_is_an_error(self):
+        result = process(b"abc", 7, model="controlnet")
+        self.assertEqual(result["status"], "error")
+        self.assertEqual(result["image_bytes"], b"")
+
+    def test_controlnet_returns_the_pose_image(self):
+        import base64
+        import ai.controlnet as pose
+        pose.generate_from_pose = lambda prompt, image_bytes, already_skeleton=False: (
+            base64.b64encode(b"POSE").decode("ascii")
+        )
+        result = process(
+            b"abc",
+            7,
+            model="controlnet",
+            prompt="a cat",
+            already_skeleton=True,
+        )
+        self.assertEqual(result["status"], "ok")
+        self.assertEqual(result["image_bytes"], b"POSE")
 
 if __name__ == "__main__":
     unittest.main()
