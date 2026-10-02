@@ -177,6 +177,31 @@ if (chooseFile && fileInput && fileName) {
 
 }
 
+  // ================= Image Click Position =================
+
+if (imagePreview) {
+
+    imagePreview.addEventListener("click", function (event) {
+
+        const rect = imagePreview.getBoundingClientRect();
+
+        const clickX = event.clientX - rect.left;
+        const clickY = event.clientY - rect.top;
+
+        const x = Math.round(
+            clickX * imagePreview.naturalWidth / imagePreview.clientWidth
+        );
+
+        const y = Math.round(
+            clickY * imagePreview.naturalHeight / imagePreview.clientHeight
+        );
+
+        console.log("Clicked X:", x);
+        console.log("Clicked Y:", y);
+
+    });
+
+}
 // ================= Generate =================
 
 const generateBtn = document.getElementById("generate-btn");
