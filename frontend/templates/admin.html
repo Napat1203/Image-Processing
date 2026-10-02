@@ -1,80 +1,269 @@
-<!DOCTYPE html>
+<!DOCTYPE HTML>
 <html lang="th">
+
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin</title>
 
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>LUMA - Admin</title>
+
+    <meta charset="utf-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1, user-scalable=no">
+
+    <!-- Hyperspace CSS -->
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='assets/css/main.css') }}">
+
+    <!-- LUMA CSS -->
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+    <noscript>
+        <link rel="stylesheet"
+              href="{{ url_for('static', filename='assets/css/noscript.css') }}">
+    </noscript>
+
 </head>
+
+
 <body>
-  <div class="wrap admin-page">
-    <header class="navbar">
-      <div class="logo">LUMA</div>
 
-      <nav class="nav-menu">
-        <a href="{{ url_for('home') }}">Home</a>
-        <a href="{{ url_for('image')}}">AI</a>
-        <a href="{{ url_for('about')}}">About</a>
-        <a href="{{ url_for('admin') }}" class="active">Admin</a>
-        <a href="{{ url_for('logout') }}">Logout</a>
+    <!-- ================= Sidebar ================= -->
 
-      </nav>
+    <section id="sidebar">
 
-      <label class="theme-toggle">
-        <input type="checkbox">
-        <span class="toggle-slider"></span>
-      </label>
-    </header>
+        <div class="inner">
 
-    <h1>Admin — User List</h1>
-    <p>Total Users: {{ total }}</p>
-    {% if error %}<p class="error">{{ error }}</p>{% endif %}
-    
-    <table class="admin-table">
-      <tr>
-        <th>ID</th>
-        <th>Username</th>
-        <th>Role</th>
-        <th>Action</th>
-      </tr>
-      {% for u in users %}
-      <tr>
-        <td>{{ u['id'] }}</td>
-        <td>{{ u['username'] }}</td>
-        <td>
-          {% if u['role'] == 'super' %}<span class="badge badge-super">Owner</span>
-          {% elif u['role'] == 'admin' %}<span class="badge badge-admin">Admin</span>
-          {% else %}<span class="badge badge-user">User</span>
-          {% endif %}
-        </td>
-        <td>
-          {% if u['id'] == user['id'] %}
-            <span class="admin-status">(You)</span>
-          {% elif u['role'] == 'super' %}
-            <span class="admin-status">(Owner)</span>
-          {% else %}
-            {% if owner %}
-            <form class="row-form" method="post" action="{{ url_for('admin_toggle_role') }}">
-              <input type="hidden" name="user_id" value="{{ u['id'] }}">
-              <input type="hidden" name="role" value="{{ 'user' if u['role'] == 'admin' else 'admin' }}">
-              <button type="submit">{{ 'Remove Admin' if u['role'] == 'admin' else 'Make Admin' }}</button>
-            </form>
-            {% endif %}
-            {% if owner or u['role'] == 'user' %}
+            <!-- Logo -->
 
-            <form class="row-form" method="post" action="{{ url_for('admin_delete') }}">
-              <input type="hidden" name="user_id" value="{{ u['id'] }}">
-              <button class="danger" type="submit">Delete</button>
-            </form>
-            {% endif %}
-          {% endif %}
-        </td>
-      </tr>
-      {% endfor %}
-    </table>
-  
-  </div>
-  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+            <div class="logo">
+                LUMA
+            </div>
+
+
+            <!-- Navigation -->
+
+            <nav>
+
+                <ul>
+
+                    <li>
+                        <a href="{{ url_for('home') }}">
+                            Home
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{{ url_for('image') }}">
+                            AI
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{{ url_for('about') }}">
+                            About
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{{ url_for('admin') }}"
+                           class="active">
+                            Admin
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{{ url_for('logout') }}">
+                            Logout
+                        </a>
+                    </li>
+
+                </ul>
+
+            </nav>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================= Main Content ================= -->
+
+    <div id="wrapper">
+
+        <section id="intro" class="wrapper style1">
+
+            <div class="inner">
+
+                <main class="admin-page">
+
+                    <h1>
+                        Admin — User List
+                    </h1>
+
+                    <p>
+                        Total Users: {{ total }}
+                    </p>
+
+
+                    {% if error %}
+
+                        <p class="error">
+                            {{ error }}
+                        </p>
+
+                    {% endif %}
+
+
+                    <!-- ================= User Table ================= -->
+
+                    <table class="admin-table">
+
+                        <tr>
+
+                            <th>ID</th>
+
+                            <th>Username</th>
+
+                            <th>Role</th>
+
+                            <th>Action</th>
+
+                        </tr>
+
+
+                        {% for u in users %}
+
+                        <tr>
+
+                            <td>
+                                {{ u['id'] }}
+                            </td>
+
+                            <td>
+                                {{ u['username'] }}
+                            </td>
+
+                            <td>
+
+                                {% if u['role'] == 'super' %}
+
+                                    <span class="badge badge-super">
+                                        Owner
+                                    </span>
+
+                                {% elif u['role'] == 'admin' %}
+
+                                    <span class="badge badge-admin">
+                                        Admin
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="badge badge-user">
+                                        User
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <td>
+
+                                {% if u['id'] == user['id'] %}
+
+                                    <span class="admin-status">
+                                        (You)
+                                    </span>
+
+
+                                {% elif u['role'] == 'super' %}
+
+                                    <span class="admin-status">
+                                        (Owner)
+                                    </span>
+
+
+                                {% else %}
+
+                                    {% if owner %}
+
+                                    <form
+                                        class="row-form"
+                                        method="post"
+                                        action="{{ url_for('admin_toggle_role') }}"
+                                    >
+
+                                        <input
+                                            type="hidden"
+                                            name="user_id"
+                                            value="{{ u['id'] }}"
+                                        >
+
+                                        <input
+                                            type="hidden"
+                                            name="role"
+                                            value="{{ 'user' if u['role'] == 'admin' else 'admin' }}"
+                                        >
+
+                                        <button type="submit">
+                                            {{ 'Remove Admin' if u['role'] == 'admin' else 'Make Admin' }}
+                                        </button>
+
+                                    </form>
+
+                                    {% endif %}
+
+
+                                    {% if owner or u['role'] == 'user' %}
+
+                                    <form
+                                        class="row-form"
+                                        method="post"
+                                        action="{{ url_for('admin_delete') }}"
+                                    >
+
+                                        <input
+                                            type="hidden"
+                                            name="user_id"
+                                            value="{{ u['id'] }}"
+                                        >
+
+                                        <button
+                                            class="danger"
+                                            type="submit"
+                                        >
+                                            Delete
+                                        </button>
+
+                                    </form>
+
+                                    {% endif %}
+
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </table>
+
+                </main>
+
+            </div>
+
+        </section>
+
+    </div>
+
+
+    <!-- LUMA JavaScript -->
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
 </body>
+
 </html>

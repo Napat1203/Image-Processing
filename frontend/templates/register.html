@@ -1,126 +1,186 @@
-<!DOCTYPE html>
+<!DOCTYPE HTML>
 <html lang="en">
 
 <head>
 
-    <!-- Help show Thai correct characters -->
-    <meta charset="UTF-8">
-
-    <!-- Help show fit page -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!-- Link to the style file -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-
-    <!-- Title of the page -->
     <title>LUMA - Register</title>
+
+    <meta charset="utf-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1, user-scalable=no">
+
+    <!-- Hyperspace CSS -->
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='assets/css/main.css') }}">
+
+    <!-- LUMA CSS -->
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+    <noscript>
+        <link rel="stylesheet"
+              href="{{ url_for('static', filename='assets/css/noscript.css') }}">
+    </noscript>
 
 </head>
 
 
 <body>
 
-    <!-- ================= Navbar ================= -->
+    <!-- ================= Sidebar ================= -->
 
-    <header class="navbar">
+    <section id="sidebar">
 
-        <!-- Logo -->
-        <div class="logo">
-            LUMA
+        <div class="inner">
+
+            <!-- Logo -->
+            <div class="logo">
+                LUMA
+            </div>
+
+
+            <!-- Navigation -->
+
+            <nav>
+                <ul>
+
+                    <li>
+                        <a href="{{ url_for('home') }}">
+                            Home
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{{ url_for('image') }}">
+                            AI
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{{ url_for('about') }}">
+                            About
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{{ url_for('login') }}">
+                            Login
+                        </a>
+                    </li>
+
+                </ul>
+            </nav>
+
         </div>
 
-
-        <!-- Navigation links -->
-        <nav class="nav-menu">
-
-            <a href="{{ url_for('home') }}">Home</a>
-            <a href="{{ url_for('image')}}">AI</a>
-            <a href="{{ url_for('about')}}">About</a>
-            <a href="{{ url_for('login')}}" class="active">Login</a>
-          
-        </nav>
+    </section>
 
 
-        <!-- Theme button -->
-        <label class="theme-toggle">
+    <!-- ================= Main Content ================= -->
 
-            <input type="checkbox">
+    <div id="wrapper">
 
-            <span class="toggle-slider"></span>
+        <section id="intro" class="wrapper style1 fullscreen">
 
-        </label>
+            <div class="inner">
 
-    </header>
+                <!-- Register -->
 
+                <main class="auth-page">
 
-    <!-- ================= Register ================= -->
-
-    <main class="auth-page">
-
-        <h1 class="auth-title">
-            Register
-        </h1>
+                    <h1 class="auth-title">
+                        Register
+                    </h1>
 
 
-        <section class="auth-box register-box">
+                    <section class="auth-box register-box">
 
-            <form method="POST" action="{{ url_for('register') }}">
+                        <form method="POST"
+                              action="{{ url_for('register') }}">
 
-              <!-- Username -->
-              <input
-                type="text"
-                name="username"
-                class="auth-input"
-                placeholder="Username"
-                required
-              >
+                            <!-- Username -->
 
-              <!-- Password -->
-              <input
-                type="password"
-                name="password"
-                class="auth-input"
-                placeholder="Password"
-                required
-              >
+                            <input
+                                type="text"
+                                name="username"
+                                class="auth-input"
+                                placeholder="Username"
+                                required
+                            >
 
-              <!-- Confirm Password -->
-              <input
-                type="password"
-                class="auth-input"
-                placeholder="Confirm Password"
-                required
-              >
 
-              <!-- Register button -->
-              <button type="submit" class="auth-btn">
-                Register
-              </button>
+                            <!-- Password -->
 
-            </form>
+                            <input
+                                type="password"
+                                name="password"
+                                class="auth-input"
+                                placeholder="Password"
+                                required
+                            >
 
-            <!-- Error message -->
-            {% if error %}
-                <p class="error">{{ error }}</p>
-            {% endif %}
 
-            <!-- Login link -->
-            <div class="auth-link-area">
+                            <!-- Confirm Password -->
 
-                <p>
-                    Already have an account?
-                </p>
+                            <input
+                                type="password"
+                                class="auth-input"
+                                placeholder="Confirm Password"
+                                required
+                            >
 
-                <a href="{{ url_for('login') }}">
-                    Login
-                </a>
+
+                            <!-- Register Button -->
+
+                            <button type="submit"
+                                    class="auth-btn">
+
+                                Register
+
+                            </button>
+
+                        </form>
+
+
+                        <!-- Error Message -->
+
+                        {% if error %}
+
+                            <p class="error">
+                                {{ error }}
+                            </p>
+
+                        {% endif %}
+
+
+                        <!-- Login Link -->
+
+                        <div class="auth-link-area">
+
+                            <p>
+                                Already have an account?
+                            </p>
+
+                            <a href="{{ url_for('login') }}">
+                                Login
+                            </a>
+
+                        </div>
+
+                    </section>
+
+                </main>
 
             </div>
 
         </section>
 
-    </main>
-    
+    </div>
+
+
+    <!-- LUMA JavaScript -->
+
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 
 </body>

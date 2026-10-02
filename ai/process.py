@@ -105,6 +105,42 @@ def process(image_bytes, user_id, model=None, prompt=None, already_skeleton=Fals
             "note": "Clicked part recolored",
             "image_bytes": buf.getvalue(),
         }
+
+    if model == "inpaint":
+        if not prompt:
+            return {
+                "user_id": user_id,
+                "status": "error",
+                "note": "Enter a prompt first",
+                "image_bytes": b"",
+            }
+        if x is None or y is None:
+            return {
+                "user_id": user_id,
+                "status": "error",
+                "note": "Click the part to change",
+                "image_bytes": b"",
+            }
+        from ai.inpaint import inpaint_part
+        from ai.forge_client import ForgeError
+        from ai.segment import SegmentError
+
+        try:
+            picture = inpaint_part(prompt, image_bytes, x, y)
+        except (ForgeError, SegmentError) as exc:
+            return {
+                "user_id": user_id,
+                "status": "error",
+                "note": str(exc),
+                "image_bytes": b"",
+            }
+        return {
+            "user_id": user_id,
+            "status": "ok",
+            "note": "Clicked part redrawn",
+            "image_bytes": base64.b64decode(picture),
+        }
+
     return {
         "user_id": user_id,
         "status": "ok",

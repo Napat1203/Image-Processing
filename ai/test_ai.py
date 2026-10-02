@@ -144,6 +144,27 @@ class ProcessTests(unittest.TestCase):
         self.assertEqual(result["status"], "ok")
         self.assertEqual(tuple(int(v) for v in painted[0, 0]), (40, 170, 70))
         self.assertEqual(tuple(int(v) for v in painted[0, 1]), (0, 0, 255))
+    def test_inpaint_without_a_click_is_an_error(self):
+        result = process(b"abc", 7, model="inpaint", prompt="a red shirt")
+        self.assertEqual(result["status"], "error")
+        self.assertEqual(result["image_bytes"], b"")
+
+    def test_inpaint_returns_the_edited_image(self):
+        import ai.inpaint as edit
+
+        edit.inpaint_part = lambda prompt, image_bytes, x, y: (
+            base64.b64encode(b"EDIT").decode("ascii")
+        )
+        result = process(
+            b"abc",
+            7,
+            model="inpaint",
+            prompt="a red shirt",
+            x=1,
+            y=2,
+        )
+        self.assertEqual(result["status"], "ok")
+        self.assertEqual(result["image_bytes"], b"EDIT")
         
 if __name__ == "__main__":
     unittest.main()
