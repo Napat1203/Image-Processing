@@ -1,5 +1,3 @@
-const themeToggle = document.querySelector(".theme-toggle input");
-
 // Check saved theme
 if (themeToggle && localStorage.getItem("theme") === "dark") {
     document.body.classList.add("dark-theme");

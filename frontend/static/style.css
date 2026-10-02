@@ -18,15 +18,6 @@
 
 :root {
     /* Pattern colors */
-    --background: #F7E7C9; 
-    --navbar: #D6BE9F; 
-    --box: #D6BE9F; 
-    --main-text: #40352C; 
-    --minor-text: #9D7356;
-}
-
-.dark-theme {
-    /* Pattern colors */
     --background: #40352C; 
     --navbar: #2D2621; 
     --box: #F7E7C9; 
@@ -130,12 +121,6 @@ body {
 #sidebar nav a.active:after {
     background-color: var(--main-text) !important;
 }
-/* ================= Theme Toggle ================= */
-
-#sidebar .theme-toggle {
-    margin-top: auto;
-    margin-bottom: 1rem;
-}
 
 /* ================= Main Wrapper ================= */
 
@@ -223,45 +208,12 @@ body {
     background-color: var(--minor-text) !important;
     color: var(--background) !important;
 }
-/* =========================================================
-   Background Pattern
-   ========================================================= */
 
-/* Light Mode */
-body:not(.dark-theme) #wrapper,
-body:not(.dark-theme) #wrapper .wrapper {
-    background-image:
-        linear-gradient(
-            30deg,
-            rgba(157, 115, 86, 0.30) 1px,
-            transparent 1px
-        ),
-        linear-gradient(
-            150deg,
-            rgba(157, 115, 86, 0.30) 1px,
-            transparent 1px
-        ) !important;
-
-    background-size: 420px 420px;
+#wrapper {
+    min-height: 100vh;
+    background-color: var(--background) !important;
 }
 
-/* Dark Mode */
-body.dark-theme #wrapper,
-body.dark-theme #wrapper .wrapper {
-    background-image:
-        linear-gradient(
-            30deg,
-            rgba(247, 231, 201, 0.08) 1px,
-            transparent 1px
-        ),
-        linear-gradient(
-            150deg,
-            rgba(247, 231, 201, 0.08) 1px,
-            transparent 1px
-        ) !important;
-
-    background-size: 420px 420px;
-}
 /* ================= Hyperspace Colors ================= */
 
 .wrapper.style1,
@@ -296,100 +248,6 @@ a {
 
 a:hover {
     color: var(--minor-text);
-}
-
-/* ================= Dark Theme ================= */
-
-body.dark-theme {
-    background-color: var(--background) !important;
-    color: var(--main-text) !important;
-}
-
-body.dark-theme #sidebar {
-    background-color: var(--navbar) !important;
-}
-
-body.dark-theme #wrapper,
-body.dark-theme #intro {
-    background-color: var(--background) !important;
-}
-
-body.dark-theme #intro h1,
-body.dark-theme #intro .inner {
-    color: var(--main-text) !important;
-}
-
-body.dark-theme #intro p,
-body.dark-theme #intro .hero-label {
-    color: var(--minor-text) !important;
-}
-
-body.dark-theme #footer {
-    background-color: var(--navbar) !important;
-}
-
-.theme-toggle {
-    position: relative; 
-    display: inline-block;
-    width: 70px;
-    height: 30px;
-}
-
-.theme-toggle input {
-    opacity: 0; 
-    width: 0; 
-    height: 0; 
-}
-
-.toggle-slider {
-    position: absolute;
-    inset: 0;
-
-    background-color: var(--main-text);
-    border-radius: 999px;
-
-    cursor: pointer;
-}
-
-.toggle-slider::before {
-
-    content:"";
-    position: absolute;
-
-    width: 26px;
-    height: 26px;
-
-    left: 2px;
-    top: 2px;
-
-    background-color: var(--background);
-    border-radius: 50%;
-    transition: transform 0.3s;
-}
-
-.theme-toggle input:checked + .toggle-slider::before {
-    transform: translateX(40px);
-}
-
-.toggle-slider::after {
-    content: "☾";
-    position: absolute;
-
-    left: 5px;
-    top: 4px;
-
-    font-size: 28px;
-    line-height: 22px;
-
-    color: var(--main-text);
-
-    pointer-events: none;
-    
-    transition: transform 0.3s;
-}
-
-.theme-toggle input:checked + .toggle-slider::after {
-    transform: translateX(40px);
 }
 
 .getstart-btn {
@@ -1495,11 +1353,6 @@ body.dark-theme #footer {
         white-space: nowrap !important;
     }
 
-    /* Theme Toggle */
-    #sidebar .theme-toggle {
-        margin: 1.5rem auto 0 !important;
-    }
-
     /* Content */
     #wrapper {
         margin-left: 0 !important;
@@ -1510,33 +1363,13 @@ body.dark-theme #footer {
     }
 } 
 
+
 /* ================= LUMA Background Pattern ================= */
 
 #wrapper {
     min-height: 100vh;
     background-color: var(--background) !important;
-}
 
-/* Light Mode */
-body:not(.dark-theme) #wrapper {
-    background-image:
-        linear-gradient(
-            30deg,
-            rgba(157, 115, 86, 0.08) 1px,
-            transparent 1px
-        ),
-        linear-gradient(
-            150deg,
-            rgba(157, 115, 86, 0.08) 1px,
-            transparent 1px
-        ) !important;
-
-    background-size: 420px 420px !important;
-    background-repeat: repeat !important;
-}
-
-/* Dark Mode */
-body.dark-theme #wrapper {
     background-image:
         linear-gradient(
             30deg,
