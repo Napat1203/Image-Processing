@@ -7,7 +7,7 @@ current route still works.
 import base64
 
 
-def process(image_bytes, user_id, model=None, prompt=None, already_skeleton=False, x=None, y=None):
+def process(image_bytes, user_id, model=None, prompt=None, already_skeleton=False, x=None, y=None, color=None):
     """Return a result dict. image_bytes is the picture to send back."""
     if model == "remove-background":
         from ai.remove_background import remove_background
@@ -59,6 +59,53 @@ def process(image_bytes, user_id, model=None, prompt=None, already_skeleton=Fals
             "image_bytes": base64.b64decode(picture),
         }
 
+    if model == "recolor":
+        if x is None or y is None:
+            return {
+                "user_id": user_id,
+                "status": "error",
+                "note": "Click the part to change",
+                "image_bytes": b"",
+            }
+        if color is None:
+            return {
+                "user_id": user_id,
+                "status": "error",
+                "note": "Choose a color first",
+                "image_bytes": b"",
+            }
+        import io
+
+        import numpy as np
+        from PIL import Image
+
+        from ai.segment import SegmentError, grow_part, recolor
+
+        try:
+            if isinstance(color, str):
+                rgb = tuple(int(part) for part in color.split(","))
+            else:
+                rgb = tuple(int(part) for part in color)
+            image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+            pixels = np.array(image)
+            mask = grow_part(pixels, int(x), int(y))
+            painted = recolor(pixels, mask, rgb)
+        except (SegmentError, TypeError, ValueError, OSError) as exc:
+            return {
+                "user_id": user_id,
+                "status": "error",
+                "note": str(exc),
+                "image_bytes": b"",
+            }
+        buf = io.BytesIO()
+        Image.fromarray(painted).save(buf, format="PNG")
+        return {
+            "user_id": user_id,
+            "status": "ok",
+            "note": "Clicked part recolored",
+            "image_bytes": buf.getvalue(),
+        }
+
     if model == "inpaint":
         if not prompt:
             return {
@@ -93,7 +140,7 @@ def process(image_bytes, user_id, model=None, prompt=None, already_skeleton=Fals
             "note": "Clicked part redrawn",
             "image_bytes": base64.b64decode(picture),
         }
-    
+
     return {
         "user_id": user_id,
         "status": "ok",

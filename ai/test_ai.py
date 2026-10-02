@@ -123,6 +123,27 @@ class ProcessTests(unittest.TestCase):
         self.assertEqual(result["status"], "ok")
         self.assertEqual(result["image_bytes"], b"POSE")
 
+    def test_recolor_without_a_color_is_an_error(self):
+        result = process(b"abc", 7, model="recolor", x=0, y=0)
+        self.assertEqual(result["status"], "error")
+        self.assertEqual(result["image_bytes"], b"")
+
+    def test_recolor_paints_only_the_clicked_part(self):
+        import io
+
+        import numpy as np
+        from PIL import Image
+
+        image = np.zeros((2, 2, 3), dtype=np.uint8)
+        image[0, 0] = (255, 255, 255)
+        image[0, 1] = (0, 0, 255)
+        buf = io.BytesIO()
+        Image.fromarray(image).save(buf, format="PNG")
+        result = process(buf.getvalue(), 7, model="recolor", x=0, y=0, color="40,170,70")
+        painted = np.array(Image.open(io.BytesIO(result["image_bytes"])).convert("RGB"))
+        self.assertEqual(result["status"], "ok")
+        self.assertEqual(tuple(int(v) for v in painted[0, 0]), (40, 170, 70))
+        self.assertEqual(tuple(int(v) for v in painted[0, 1]), (0, 0, 255))
     def test_inpaint_without_a_click_is_an_error(self):
         result = process(b"abc", 7, model="inpaint", prompt="a red shirt")
         self.assertEqual(result["status"], "error")
