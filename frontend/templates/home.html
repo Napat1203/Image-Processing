@@ -1,76 +1,129 @@
-<!DOCTYPE html> 
-<!-- language of the page -->
+<!DOCTYPE HTML>
 <html lang="en">
 
-    <head>
+<head>
+    <title>LUMA</title>
 
-        <!-- Link to the style file -->
-        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-        <!--Help show thai correct characters-->
-        <meta charset="UTF-8">
-        <!--Help show fit page-->
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <!--Title of the page-->
-        <title>LUMA</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 
-    </head> 
+    <!-- Hyperspace CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/main.css') }}">
 
-    <body>
-        <!-- Navigation -->
-         <header class="navbar">
+    <!-- LUMA CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <noscript>
+        <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/noscript.css') }}">
+    </noscript>
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <section id="sidebar">
+
+        <div class="inner">
+
             <!-- Logo -->
-             <div class="logo">
+            <div class="logo">
                 LUMA
-             </div>
+            </div>
 
-             <!-- Navigation links -->
-              <nav class="nav-menu">
-                <a href="{{ url_for('home') }}" class="active">Home</a>
-                <a href="{{ url_for('image')}}">AI</a>
-                <a href="{{ url_for('about')}}">About</a>
+            <!-- Navigation -->
+            <nav>
+                <ul>
+                    <li>
+                        <a href="{{ url_for('home') }}">Home</a>
+                    </li>
 
-                {% if user and user['role'] in ['admin', 'super'] %}
-                  <a href="{{ url_for('admin') }}">Admin</a>
-                {% endif %}
+                    <li>
+                        <a href="{{ url_for('image') }}">AI</a>
+                    </li>
 
-                {% if user %}
-                  <a href="{{ url_for('logout') }}">Logout</a>
-                {% else %}
-                  <a href="{{ url_for('login') }}">Login</a>
-                {% endif %}
-              </nav>
+                    <li>
+                        <a href="{{ url_for('about') }}">About</a>
+                    </li>
 
-              <!--Theme btn-->
-              <label class="theme-toggle">
-                <input type="checkbox"> <!--get status-->
-                <span class="toggle-slider"></span> <!--output of the toggle-->
-              </label>
-         </header>
+                    {% if user and user['role'] in ['admin', 'super'] %}
+                    <li>
+                        <a href="{{ url_for('admin') }}">Admin</a>
+                    </li>
+                    {% endif %}
 
-         <main class="home">
-            <section class="hero">
-                <h1>Welcome to LUMA</h1>
+                    {% if user %}
+                    <li>
+                        <a href="{{ url_for('logout') }}">Logout</a>
+                    </li>
+                    {% else %}
+                    <li>
+                        <a href="{{ url_for('login') }}">Login</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+
+            <!-- Theme Toggle -->
+            <label class="theme-toggle">
+                <input type="checkbox">
+                <span class="toggle-slider"></span>
+            </label>
+
+        </div>
+
+    </section>
+
+
+    <!-- Main Content -->
+    <div id="wrapper">
+
+        <!-- Home -->
+        <section id="intro" class="wrapper style1 fullscreen fade-up">
+
+            <div class="inner">
+
+                <span class="hero-label">
+                    LEARNING-BASED UNIVERSAL MEDIA ARTIST
+                </span>
+
+                <h1>
+                    Welcome to<br>
+                    LUMA
+                </h1>
 
                 <p>
-                    LUMA is from the word "Learning-based Universal Media Artist"
+                    LUMA is from the word
+                    "Learning-based Universal Media Artist"
                 </p>
 
-                <!--Button to get started -->
-                {% if user %}
-                  <a href="{{ url_for('image') }}" class="getstart-btn">
-                      Get Started
-                  </a>
-                {% else %}
-                  <a href="{{ url_for('login') }}" class="getstart-btn">
-                      Get Started
-                  </a>
-                {% endif %}
-            </section>
+                <ul class="actions">
+                    <li>
+                        {% if user %}
+                        <a href="{{ url_for('image') }}" class="button scrolly">
+                            Get Started
+                        </a>
+                        {% else %}
+                        <a href="{{ url_for('login') }}" class="button scrolly">
+                            Get Started
+                        </a>
+                        {% endif %}
+                    </li>
+                </ul>
 
-         </main>
+            </div>
 
-         <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+        </section>
 
-    </body>
+    </div>
+
+
+    <!-- Footer -->
+    <footer id="footer" class="wrapper style1-alt">
+    </footer>
+
+    <!-- LUMA JavaScript -->
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+</body>
 
 </html>
