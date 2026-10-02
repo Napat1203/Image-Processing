@@ -4,8 +4,10 @@ The page sends a model name. Unknown names keep the demo reply so the
 current route still works.
 """
 
+import base64
 
-def process(image_bytes, user_id, model=None):
+
+def process(image_bytes, user_id, model=None, prompt=None, already_skeleton=False):
     """Return a result dict. image_bytes is the picture to send back."""
     if model == "remove-background":
         from ai.remove_background import remove_background
@@ -26,13 +28,6 @@ def process(image_bytes, user_id, model=None):
             "image_bytes": cut,
         }
 
-    return {
-        "user_id": user_id,
-        "status": "ok",
-        "note": "(Demo)Image processed successfully!",
-        "image_bytes": image_bytes,
-    }
-
     if model == "controlnet":
         if not prompt:
             return {
@@ -42,12 +37,21 @@ def process(image_bytes, user_id, model=None):
                 "image_bytes": b"",
             }
         from ai.controlnet import generate_from_pose
+        from ai.forge_client import ForgeError
 
-        picture = generate_from_pose(
-            prompt,
-            image_bytes,
-            already_skeleton=already_skeleton,
-        )
+        try:
+            picture = generate_from_pose(
+                prompt,
+                image_bytes,
+                already_skeleton=already_skeleton,
+            )
+        except ForgeError as exc:
+            return {
+                "user_id": user_id,
+                "status": "error",
+                "note": str(exc),
+                "image_bytes": b"",
+            }
         return {
             "user_id": user_id,
             "status": "ok",
