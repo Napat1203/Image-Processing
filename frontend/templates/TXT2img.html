@@ -1,137 +1,306 @@
-<!DOCTYPE html>
+<!DOCTYPE HTML>
 <html lang="en">
 
-    <head>
-        <!-- Link to the style file -->
-        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-        <!--Help show thai correct characters-->
-        <meta charset="UTF-8">
-        <!--Help show fit page-->
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <!--Title of the page-->
-        <title>LUMA</title>
-    </head>
+<head>
 
-    <body>
+    <title>LUMA - TXT2img</title>
 
-        <header class="navbar">
+    <meta charset="utf-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1, user-scalable=no">
+
+    <!-- Hyperspace CSS -->
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='assets/css/main.css') }}">
+
+    <!-- LUMA CSS -->
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+    <noscript>
+        <link rel="stylesheet"
+              href="{{ url_for('static', filename='assets/css/noscript.css') }}">
+    </noscript>
+
+</head>
+
+
+<body>
+
+    <!-- ================= Sidebar ================= -->
+
+    <section id="sidebar">
+
+        <div class="inner">
+
             <!-- Logo -->
             <div class="logo">
                 LUMA
             </div>
 
-            <!-- Navigation links -->
-            <nav class="nav-menu">
-                <a href="{{ url_for('home') }}">Home</a>
-                <a href="{{ url_for('image')}}" class="active">AI</a>
-                <a href="{{ url_for('about')}}">About</a>
-                {% if user and user['role'] in ['admin', 'super'] %}
-                    <a href="{{ url_for('admin') }}">Admin</a>
-                {% endif %}
-                <a href="{{ url_for('logout') }}">Logout</a>
+
+            <!-- Navigation -->
+            <nav>
+
+                <ul>
+
+                    <li>
+                        <a href="{{ url_for('home') }}">
+                            Home
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{{ url_for('image') }}"
+                           class="active">
+                            AI
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{{ url_for('about') }}">
+                            About
+                        </a>
+                    </li>
+
+                    {% if user and user['role'] in ['admin', 'super'] %}
+                    <li>
+                        <a href="{{ url_for('admin') }}">
+                            Admin
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% if user %}
+                    <li>
+                        <a href="{{ url_for('logout') }}">
+                            Logout
+                        </a>
+                    </li>
+                    {% else %}
+                    <li>
+                        <a href="{{ url_for('login') }}">
+                            Login
+                        </a>
+                    </li>
+                    {% endif %}
+
+                </ul>
+
             </nav>
 
-            <!--Theme btn-->
-            <label class="theme-toggle">
-                <input type="checkbox"> <!--get status-->
-                <span class="toggle-slider"></span> <!--output of the toggle-->
-            </label>
-        </header>
+        </div>
 
-        <main class="ai-page">
-            <section class="workspace">
-                <div class="welcome-box">
-                    <h1>Welcome, User!</h1>
-                    <p>Let's create something with LUMA.</p>
-                </div> 
+    </section>
 
-                <div class="ai-tabs">
-                    <a href="{{ url_for('image') }}" class="ai-tab">
-                        Image
-                    </a>
 
-                    <a href="{{ url_for('webcam') }}" class="ai-tab">
-                        Webcam
-                    </a> 
+    <!-- ================= Main Content ================= -->
 
-                    <a href="{{ url_for('txt2img') }}" class="ai-tab active">
-                        TXT2img
-                    </a>
-                </div>
+    <div id="wrapper">
 
-                <div class="txt2img-work">
-                    
-                    <div class="prompt-box">
-                        <label for="prompt-input">Prompt</label>
+        <section id="intro" class="wrapper style1">
 
-                        <textarea 
-                            id="prompt-input"
-                            placeholder="Describe the image you want to create. . ."
-                        ></textarea>
+            <div class="inner">
 
-                        <button class="generate-btn" id="txt-generate-btn">
-                            Generate
-                        </button>
-                    </div>
+                <main class="ai-page">
 
-                    <div class="result-box" id="generated-result">
-                        <p id="result-text">Generated Image</p>
+                    <section class="workspace">
 
-                        <img id="result-image" src="" alt="Generated Image">
 
-                    </div> 
+                        <!-- Welcome Box -->
 
-                    <div class="image-actions" id="image-actions">
-                        <p>Would you like to edit this image?</p>
+                        <div class="welcome-box">
 
-                        <div class="action-buttons">
-                            <button class="edit-btn" id="edit-btn">Edit Image</button>
-                            <a  id="download-first-btn"
-                                class="download-btn"
-                                href="#"
-                                download="luma-result.png">Download
-                            </a>
+                            <h1>
+                                Welcome, User!
+                            </h1>
+
+                            <p>
+                                Let's create something with LUMA.
+                            </p>
+
                         </div>
-                    </div>
 
-                    <div class="edit-process" id="edit-process">
-                        <div class="model-select">
-                            <button class="model-btn" id="txt-model-btn">
-                                Select AI Model ▼
-                            </button>
 
-                            <div class="txt-model-menu" id="txt-model-menu">
-                                <button class="txt-model-option" data-model="Model 1">Remove Background</button>
-                                <button class="txt-model-option">Model 2</button>
-                                <button class="txt-model-option">Model 3</button>
+                        <!-- AI Mode Tabs -->
+
+                        <div class="ai-tabs">
+
+                            <a href="{{ url_for('image') }}"
+                               class="ai-tab">
+                                Image
+                            </a>
+
+                            <a href="{{ url_for('webcam') }}"
+                               class="ai-tab">
+                                Webcam
+                            </a>
+
+                            <a href="{{ url_for('txt2img') }}"
+                               class="ai-tab active">
+                                TXT2img
+                            </a>
+
+                        </div>
+
+
+                        <!-- TXT2img Work Area -->
+
+                        <div class="txt2img-work">
+
+
+                            <!-- Prompt -->
+
+                            <div class="prompt-box">
+
+                                <label for="prompt-input">
+                                    Prompt
+                                </label>
+
+                                <textarea
+                                    id="prompt-input"
+                                    placeholder="Describe the image you want to create. . ."
+                                ></textarea>
+
+
+                                <button class="generate-btn"
+                                        id="txt-generate-btn">
+                                    Generate
+                                </button>
+
                             </div>
 
+
+                            <!-- Generated Result -->
+
+                            <div class="result-box"
+                                 id="generated-result">
+
+                                <p id="result-text">
+                                    Generated Image
+                                </p>
+
+                                <img id="result-image"
+                                     src=""
+                                     alt="Generated Image">
+
+                            </div>
+
+
+                            <!-- Image Actions -->
+
+                            <div class="image-actions"
+                                 id="image-actions">
+
+                                <p>
+                                    Would you like to edit this image?
+                                </p>
+
+
+                                <div class="action-buttons">
+
+                                    <button class="edit-btn"
+                                            id="edit-btn">
+                                        Edit Image
+                                    </button>
+
+                                    <a id="download-first-btn"
+                                       class="download-btn"
+                                       href="#"
+                                       download="luma-result.png">
+                                        Download
+                                    </a>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- Edit Process -->
+
+                            <div class="edit-process"
+                                 id="edit-process">
+
+                                <div class="model-select">
+
+                                    <button class="model-btn"
+                                            id="txt-model-btn">
+                                        Select AI Model ▼
+                                    </button>
+
+
+                                    <div class="txt-model-menu"
+                                         id="txt-model-menu">
+
+                                        <button class="txt-model-option" data-model="remove-background">
+                                            Remove Background
+                                        </button>
+
+                                        <button class="txt-model-option" data-model="controlnet">
+                                            ControlNet
+                                        </button>
+
+                                        <button class="txt-model-option" data-model="Model 3">
+                                            Model 3
+                                        </button>
+
+                                        </button>
+
+                                    </div>
+
+                                </div>
+
+
+                                <button class="generate-btn"
+                                        id="edit-generate-btn">
+                                    Generate
+                                </button>
+
+                            </div>
+
+
+                            <!-- Final Result -->
+
+                            <div class="final-result-box"
+                                 id="final-result">
+
+                                <p>
+                                    Final Result
+                                </p>
+
+                                <img id="final-result-image"
+                                     src=""
+                                     alt="Final AI Result">
+
+
+                                <a id="download-btn"
+                                   class="download-btn"
+                                   href=""
+                                   download="luma-final-result.png">
+                                    Download
+                                </a>
+
+                            </div>
+
+
                         </div>
 
-                        <button class="generate-btn" id="edit-generate-btn">
-                            Generate
-                        </button>
-                    </div>
+                    </section>
 
-                    <div class="final-result-box" id="final-result">
-                        <p>Final Result</p>
+                </main>
 
-                        <img id="final-result-image" src="" alt="Final AI Result">
-                        <a id="download-btn"
-                            class="download-btn"
-                            href=""
-                            download="luma-final-result.png">Download
-                        </a>
+            </div>
 
-                    </div>
+        </section>
 
-                </div>
+    </div>
 
-            </section>
-        </main>
 
-        <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <!-- LUMA JavaScript -->
 
-    </body>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+</body>
 
 </html>
