@@ -1,5 +1,8 @@
-numpy
-rembg[cpu]
-requests
-transformers
-sentencepiece
+numpy==2.5.3
+rembg[cpu]==2.0.85
+requests==2.34.2
+transformers==5.17.0
+sentencepiece==0.2.2
+pillow==12.3.0
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.14.0+cpu
