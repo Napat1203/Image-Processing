@@ -1,24 +1,3 @@
-// Check saved theme
-if (themeToggle && localStorage.getItem("theme") === "dark") {
-    document.body.classList.add("dark-theme");
-    themeToggle.checked = true;
-}
-
-// Change theme
-if (themeToggle) {
-    themeToggle.addEventListener("change", function () {
-
-        if (themeToggle.checked) {
-            document.body.classList.add("dark-theme");
-            localStorage.setItem("theme", "dark");
-        } else {
-            document.body.classList.remove("dark-theme");
-            localStorage.setItem("theme", "light");
-        }
-
-    });
-}
-
 // ================= Webcam =================
 
 const startCamera = document.getElementById("start-camera");
