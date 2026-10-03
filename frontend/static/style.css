@@ -399,6 +399,30 @@ a:hover {
     font-weight: bold;
 
     transition: transform 0.2s ease;
+} 
+.result-box #result-text {
+    display: none;
+}
+
+.upload-box {
+    position: relative;
+}
+
+.selection-marker {
+    position: absolute;
+    z-index: 10;
+    width: 18px;
+    height: 18px;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    background: rgba(180, 110, 70, 0.55);
+    box-shadow: 0 0 0 3px rgba(35, 29, 25, 0.75);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+.selection-marker[hidden] {
+    display: none;
 }
 
 .upload-box:hover,
@@ -449,6 +473,10 @@ a:hover {
     align-items: center;
     justify-content: center;
 
+    width: 150px;
+    min-height: 52px;
+    font-family: inherit;
+    line-height: 1;
     box-sizing: border-box;
 
     transition: 0.2s;
@@ -504,6 +532,36 @@ a:hover {
     flex-direction: column;
     align-items: center;
     gap: 3rem;
+}
+
+.controlnet-prompt {
+    width: min(260px, 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.controlnet-prompt[hidden] {
+    display: none !important;
+}
+
+.controlnet-prompt label {
+    color: var(--main-text);
+    font-size: 0.75rem;
+    font-weight: bold;
+}
+
+.controlnet-prompt textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 0.75rem;
+    background: var(--background);
+    color: var(--main-text);
+    border: 1px solid var(--minor-text);
+    border-radius: 12px;
+    font: inherit;
+    font-size: 0.75rem;
+    resize: vertical;
 }
 
 
@@ -1408,4 +1466,32 @@ a:hover {
 
     background-size: 420px 420px !important;
     background-repeat: repeat !important;
+}
+
+.color-picker {
+    display: none;
+    justify-items: center;
+    gap: 0.75rem;
+}
+
+#color-wheel {
+    display: block;
+    width: min(220px, 100%);
+    height: auto;
+    cursor: crosshair;
+    touch-action: none;
+}
+
+.selected-color {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#color-preview {
+    width: 24px;
+    height: 24px;
+    border: 1px solid var(--main-text);
+    border-radius: 50%;
+    background: #ff0000;
 }

@@ -199,14 +199,32 @@
                                             ControlNet
                                         </button>
 
-                                        <button class="model-option" data-model="Model 3">
-                                            Model 3
-                                        </button>
-
                                     </div>
 
                                 </div>
 
+                                <div class="color-picker">
+                                    <canvas id="color-wheel" width="220" height="220"
+                                            aria-label="เลือกสี"></canvas>
+
+                                    <div class="selected-color">
+                                        <span id="color-preview"></span>
+                                        <output id="color-value">#ff0000</output>
+                                    </div>
+
+                                    <input id="selected-color" type="hidden" value="#ff0000">
+                                </div>
+
+                                <div class="controlnet-prompt" id="controlnet-prompt-box" hidden>
+                                    <label for="controlnet-prompt">Prompt for ControlNet</label>
+                                    <textarea id="controlnet-prompt"
+                                              rows="3"
+                                              placeholder="Describe the image you want to generate"></textarea>
+                                </div>
+
+                                <button class="generate-btn" id="recolor-btn" type="button">
+                                    Change Color
+                                </button>
 
                                 <div class="arrow">
                                     →
