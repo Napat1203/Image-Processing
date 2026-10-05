@@ -18,6 +18,25 @@ NEIGHBOURS_4 = (
     (0, 1),
 )
 
+def parse_color(color):
+    """Accept #rrggbb from the page, or r,g,b, or three numbers."""
+    if isinstance(color, str) and color.startswith("#"):
+        text = color[1:]
+        if len(text) != 6:
+            raise SegmentError("Color must be red, green, and blue")
+        try:
+            return tuple(int(text[i:i + 2], 16) for i in (0, 2, 4))
+        except ValueError as exc:
+            raise SegmentError("Color must be red, green, and blue") from exc
+    parts = color.split(",") if isinstance(color, str) else color
+    try:
+        rgb = tuple(int(part) for part in parts)
+    except (TypeError, ValueError) as exc:
+        raise SegmentError("Color must be red, green, and blue") from exc
+    if len(rgb) != 3:
+        raise SegmentError("Color must be red, green, and blue")
+    return rgb
+
 def color_threshold(image, color, max_diff=30):
     """Mark every pixel close to a colour, anywhere in the image.
     Neighbours are ignored. Each channel must fall within max_diff of

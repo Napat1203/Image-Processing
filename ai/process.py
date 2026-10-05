@@ -67,16 +67,13 @@ def _recolor(image_bytes, x, y, color, **_):
     import numpy as np
     from PIL import Image
 
-    from ai.segment import grow_part, recolor
+    from ai.segment import grow_part, parse_color, recolor
 
     _require(x, "Click the part to change")
     _require(y, "Click the part to change")
     _require(color, "Choose a color first")
     try:
-        if isinstance(color, str):
-            rgb = tuple(int(part) for part in color.split(","))
-        else:
-            rgb = tuple(int(part) for part in color)
+        rgb = parse_color(color)
         image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
         pixels = np.array(image)
         mask = grow_part(pixels, int(x), int(y))

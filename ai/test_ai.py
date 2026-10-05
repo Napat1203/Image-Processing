@@ -181,6 +181,14 @@ class ProcessTests(unittest.TestCase):
         self.assertEqual(tuple(int(v) for v in painted[0, 0]), (40, 170, 70))
         self.assertEqual(tuple(int(v) for v in painted[0, 1]), (0, 0, 255))
 
+    def test_recolor_accepts_a_hex_color(self):
+        image = np.zeros((2, 2, 3), dtype=np.uint8)
+        image[0, 0] = (255, 255, 255)
+        result = process(png_bytes(image), 7, model="recolor", x=0, y=0, color="#ff0000")
+        painted = np.array(Image.open(io.BytesIO(result["image_bytes"])).convert("RGB"))
+        self.assertEqual(result["status"], "ok")
+        self.assertEqual(tuple(int(v) for v in painted[0, 0]), (255, 0, 0))
+
     def test_recolor_outside_the_image_is_an_error(self):
         image = np.zeros((2, 2, 3), dtype=np.uint8)
         result = process(png_bytes(image), 7, model="recolor", x=9, y=9, color="1,2,3")
