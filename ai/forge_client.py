@@ -4,6 +4,7 @@ Thai prompts are translated to English first. Image size and step count stay
 in this file because the page does not let the user change them.
 """
 
+import http
 import os
 import threading
 
@@ -71,19 +72,24 @@ def build_txt2img_payload(prompt):
     }
 
 
+def post_to_forge(path, payload, base_url=None, session=None, timeout=600):
+     """Send payload to one Forge endpoint and return the first base64 image."""
+     url = (base_url or FORGE_URL).rstrip("/") + path
+     http = session or requests
+     try:
+         response = http.post(url, json=payload, timeout=timeout)
+     except requests.RequestException as exc:
+         raise ForgeError("Start Forge first, then generate") from exc
+     if response.status_code >= 400:
+         raise ForgeError("Forge is not accepting requests. Launch it with --api")
+     return image_from_response(response.json())
+
+
 def generate_image(prompt, base_url=None, session=None, translator=None):
     with _generate_lock:
         text = prepare_prompt(prompt, translator=translator)
         payload = build_txt2img_payload(text)
-        url = (base_url or FORGE_URL).rstrip("/") + "/sdapi/v1/txt2img"
-        http = session or requests
-        try:
-            response = http.post(url, json=payload, timeout=180)
-        except requests.RequestException as exc:
-            raise ForgeError("Start Forge first, then generate") from exc
-        if response.status_code >= 400:
-            raise ForgeError("Forge is not accepting requests. Launch it with --api")
-        return image_from_response(response.json())
+        return post_to_forge("/sdapi/v1/txt2img", payload, base_url, session, timeout=180)
 
 
 def image_from_response(data):

@@ -9,15 +9,13 @@ import base64
 import io
 
 import numpy as np
-import requests
 from PIL import Image
 
 from ai.forge_client import (
-    FORGE_URL,
     ForgeError,
     _generate_lock,
     build_txt2img_payload,
-    image_from_response,
+    post_to_forge,
     prepare_prompt,
 )
 from ai.segment import SegmentError, grow_part
@@ -51,22 +49,16 @@ def inpaint_part(prompt, image_bytes, x, y, base_url=None, session=None, transla
     with _generate_lock:
         text = prepare_prompt(prompt, translator=translator)
         payload = build_txt2img_payload(text)
-        payload["init_images"] = [png_b64(image)]
-        payload["mask"] = png_b64(mask_image)
-        # 0.8 is high enough to draw a new pattern. The mask keeps the rest.
-        payload["denoising_strength"] = 0.8
-        payload["mask_blur"] = 4
-        payload["inpainting_fill"] = 1
-        payload["inpaint_full_res"] = True
-        payload["inpaint_full_res_padding"] = 32
-        payload["inpainting_mask_invert"] = 0
-        payload["resize_mode"] = 0
-        url = (base_url or FORGE_URL).rstrip("/") + "/sdapi/v1/img2img"
-        http = session or requests
-        try:
-            response = http.post(url, json=payload, timeout=600)
-        except requests.RequestException as exc:
-            raise ForgeError("Start Forge first, then generate") from exc
-        if response.status_code >= 400:
-            raise ForgeError("Forge is not accepting requests. Launch it with --api")
-        return image_from_response(response.json())
+        payload.update(
+            init_images=[png_b64(image)],
+            mask=png_b64(mask_image),
+            # 0.8 is high enough to draw a new pattern. The mask keeps the rest.
+            denoising_strength=0.8,
+            mask_blur=4,
+            inpainting_fill=1,
+            inpaint_full_res=True,
+            inpaint_full_res_padding=32,
+            inpainting_mask_invert=0,
+            resize_mode=0,
+        )
+        return post_to_forge("/sdapi/v1/img2img", payload, base_url, session)
