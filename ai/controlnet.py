@@ -7,14 +7,11 @@ extract the pose a second time. The ControlNet model is used either way.
 
 import base64
 
-import requests
-
 from ai.forge_client import (
-    FORGE_URL,
     ForgeError,
     _generate_lock,
     build_txt2img_payload,
-    image_from_response,
+    post_to_forge,
     prepare_prompt,
 )
 
@@ -50,12 +47,4 @@ def generate_from_pose(
                 ]
             }
         }
-        url = (base_url or FORGE_URL).rstrip("/") + "/sdapi/v1/txt2img"
-        http = session or requests
-        try:
-            response = http.post(url, json=payload, timeout=600)
-        except requests.RequestException as exc:
-            raise ForgeError("Start Forge first, then generate") from exc
-        if response.status_code >= 400:
-            raise ForgeError("Forge is not accepting requests. Launch it with --api")
-        return image_from_response(response.json())
+        return post_to_forge("/sdapi/v1/txt2img", payload, base_url, session)

@@ -1,15 +1,25 @@
 """Check the AI helpers without calling Forge or loading a model."""
 
 import base64
+import io
 import unittest
+from unittest import mock
 
 import numpy as np
+import requests
+from PIL import Image
 
 from ai.controlnet import generate_from_pose
-from ai.forge_client import ForgeError, prepare_prompt
+from ai.forge_client import ForgeError, post_to_forge, prepare_prompt
 from ai.process import process
 from ai.remove_background import remove_background
 from ai.segment import color_threshold, grow_part, recolor
+
+
+def png_bytes(pixels):
+    buf = io.BytesIO()
+    Image.fromarray(pixels).save(buf, format="PNG")
+    return buf.getvalue()
 
 
 class SegmentTests(unittest.TestCase):
@@ -47,6 +57,44 @@ class PromptTests(unittest.TestCase):
     def test_empty_prompt_is_rejected(self):
         with self.assertRaises(ForgeError):
             prepare_prompt("  ")
+
+
+class ForgeTests(unittest.TestCase):
+    def test_forge_that_is_off_asks_to_start_it(self):
+        class FakeSession:
+            def post(self, url, json=None, timeout=None):
+                raise requests.ConnectionError()
+
+        with self.assertRaisesRegex(ForgeError, "Start Forge first"):
+            post_to_forge("/sdapi/v1/txt2img", {}, session=FakeSession())
+
+    def test_forge_error_status_asks_for_api(self):
+        class FakeResponse:
+            status_code = 404
+
+            def json(self):
+                return {}
+
+        class FakeSession:
+            def post(self, url, json=None, timeout=None):
+                return FakeResponse()
+
+        with self.assertRaisesRegex(ForgeError, "--api"):
+            post_to_forge("/sdapi/v1/txt2img", {}, session=FakeSession())
+
+    def test_reply_without_images_is_an_error(self):
+        class FakeResponse:
+            status_code = 200
+
+            def json(self):
+                return {}
+
+        class FakeSession:
+            def post(self, url, json=None, timeout=None):
+                return FakeResponse()
+
+        with self.assertRaises(ForgeError):
+            post_to_forge("/sdapi/v1/txt2img", {}, session=FakeSession())
 
 
 class PoseTests(unittest.TestCase):
@@ -91,10 +139,8 @@ class ProcessTests(unittest.TestCase):
         self.assertEqual(result["image_bytes"], b"abc")
 
     def test_remove_background_uses_the_cut_image(self):
-        import ai.remove_background as bg
-
-        bg.remove_background = lambda image_bytes: b"PNG"
-        result = process(b"abc", 7, model="remove-background")
+        with mock.patch("ai.remove_background.remove_background", return_value=b"PNG"):
+            result = process(b"abc", 7, model="remove-background")
         self.assertEqual(result["image_bytes"], b"PNG")
         self.assertEqual(result["status"], "ok")
 
@@ -108,18 +154,15 @@ class ProcessTests(unittest.TestCase):
         self.assertEqual(result["image_bytes"], b"")
 
     def test_controlnet_returns_the_pose_image(self):
-        import base64
-        import ai.controlnet as pose
-        pose.generate_from_pose = lambda prompt, image_bytes, already_skeleton=False: (
-            base64.b64encode(b"POSE").decode("ascii")
-        )
-        result = process(
-            b"abc",
-            7,
-            model="controlnet",
-            prompt="a cat",
-            already_skeleton=True,
-        )
+        pose = base64.b64encode(b"POSE").decode("ascii")
+        with mock.patch("ai.controlnet.generate_from_pose", return_value=pose):
+            result = process(
+                b"abc",
+                7,
+                model="controlnet",
+                prompt="a cat",
+                already_skeleton=True,
+            )
         self.assertEqual(result["status"], "ok")
         self.assertEqual(result["image_bytes"], b"POSE")
 
@@ -129,42 +172,47 @@ class ProcessTests(unittest.TestCase):
         self.assertEqual(result["image_bytes"], b"")
 
     def test_recolor_paints_only_the_clicked_part(self):
-        import io
-
-        import numpy as np
-        from PIL import Image
-
         image = np.zeros((2, 2, 3), dtype=np.uint8)
         image[0, 0] = (255, 255, 255)
         image[0, 1] = (0, 0, 255)
-        buf = io.BytesIO()
-        Image.fromarray(image).save(buf, format="PNG")
-        result = process(buf.getvalue(), 7, model="recolor", x=0, y=0, color="40,170,70")
+        result = process(png_bytes(image), 7, model="recolor", x=0, y=0, color="40,170,70")
         painted = np.array(Image.open(io.BytesIO(result["image_bytes"])).convert("RGB"))
         self.assertEqual(result["status"], "ok")
         self.assertEqual(tuple(int(v) for v in painted[0, 0]), (40, 170, 70))
         self.assertEqual(tuple(int(v) for v in painted[0, 1]), (0, 0, 255))
+
+    def test_recolor_accepts_a_hex_color(self):
+        image = np.zeros((2, 2, 3), dtype=np.uint8)
+        image[0, 0] = (255, 255, 255)
+        result = process(png_bytes(image), 7, model="recolor", x=0, y=0, color="#ff0000")
+        painted = np.array(Image.open(io.BytesIO(result["image_bytes"])).convert("RGB"))
+        self.assertEqual(result["status"], "ok")
+        self.assertEqual(tuple(int(v) for v in painted[0, 0]), (255, 0, 0))
+
+    def test_recolor_outside_the_image_is_an_error(self):
+        image = np.zeros((2, 2, 3), dtype=np.uint8)
+        result = process(png_bytes(image), 7, model="recolor", x=9, y=9, color="1,2,3")
+        self.assertEqual(result["status"], "error")
+
     def test_inpaint_without_a_click_is_an_error(self):
         result = process(b"abc", 7, model="inpaint", prompt="a red shirt")
         self.assertEqual(result["status"], "error")
         self.assertEqual(result["image_bytes"], b"")
 
     def test_inpaint_returns_the_edited_image(self):
-        import ai.inpaint as edit
-
-        edit.inpaint_part = lambda prompt, image_bytes, x, y: (
-            base64.b64encode(b"EDIT").decode("ascii")
-        )
-        result = process(
-            b"abc",
-            7,
-            model="inpaint",
-            prompt="a red shirt",
-            x=1,
-            y=2,
-        )
+        edit = base64.b64encode(b"EDIT").decode("ascii")
+        with mock.patch("ai.inpaint.inpaint_part", return_value=edit):
+            result = process(
+                b"abc",
+                7,
+                model="inpaint",
+                prompt="a red shirt",
+                x=1,
+                y=2,
+            )
         self.assertEqual(result["status"], "ok")
         self.assertEqual(result["image_bytes"], b"EDIT")
-        
+
+
 if __name__ == "__main__":
     unittest.main()
