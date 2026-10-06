@@ -17,16 +17,15 @@ from flask_cors import CORS  # ใช้เปิด CORS ให้สามา�
 ROOT = Path(__file__).resolve().parent.parent  # หาโฟลเดอร์หลักของโปรเจกต์ Image-Processing
 sys.path.insert(0, str(ROOT))  # เพิ่มโฟลเดอร์หลักเข้าไปใน Python path
 
-
 from backend.db import (   # import ฟังก์ชันที่ใช้ติดต่อ SQLite
     init_db,               # สร้างและเตรียม database
     get_user_by_username,  # ค้นหา user จาก username
     create_user,           # สร้าง user ใหม่
-    list_users,
+    list_users,            # แสดงรายการ user ทั้งหมด
 )
 
 from ai.process import process  # import ฟังก์ชัน AI สำหรับประมวลผลรูปภาพ
-
+from ai.forge_client import generate_image, ForgeError  # import ฟังก์ชันสร้างภาพและ error จาก Forge
 
 app = Flask(   # สร้าง Flask application
     __name__,  # ระบุชื่อ application
@@ -250,6 +249,7 @@ def process_image():  # ฟังก์ชันรับรูปจากห�
 
     image = request.files.get("image")  # รับรูปภาพจากหน้าเว็บ
     model = request.form.get("model") or "stub"  # รับชื่อ AI model
+    prompt = request.form.get("prompt") # รับข้อความ prompt จากหน้าเว็บ
 
     if not image:              # ตรวจสอบว่ามีรูปภาพหรือไม่
         return jsonify({       # ส่งข้อความแจ้งเตือนกลับไป
@@ -259,8 +259,8 @@ def process_image():  # ฟังก์ชันรับรูปจากห�
 
     data = image.read()  # อ่านข้อมูลรูปภาพเป็น bytes
 
-    result = process(data, user["id"], model)  # ส่งรูป user_id และชื่อ model ไปให้ AI
-
+    result = process(data, user["id"], model, prompt=prompt)  # ส่งรูป user_id ชื่อ model และ prompt ไปให้ AI ประมวลผล
+    
     if result.get("status") == "ok":  # ตรวจสอบว่า AI ประมวลผลสำเร็จหรือไม่
         image_base64 = base64.b64encode(result["image_bytes"]).decode("utf-8")
         
@@ -276,6 +276,238 @@ def process_image():  # ฟังก์ชันรับรูปจากห�
     }), 500  # ส่ง HTTP status 500
 
 
+# =========================================================
+# ฟังก์ชันเปลี่ยนสีส่วนของรูปภาพ
+# =========================================================
+@app.route("/api/recolor", methods=["POST"])  # สร้าง API สำหรับเปลี่ยนสีรูปภาพ
+def recolor_image():  # ฟังก์ชันรับรูป พิกัด และสีจาก Frontend
+
+    user = session.get("user")  # อ่านข้อมูล user จาก session
+
+    if user is None:  # ตรวจสอบว่าผู้ใช้ Login แล้วหรือยัง
+        return jsonify({
+            "success": False,
+            "message": "กรุณาเข้าสู่ระบบ"
+        }), 401
+
+    image = request.files.get("image")  # รับรูปภาพจาก Frontend
+    x = request.form.get("x", type=int)  # รับพิกัด x และแปลงเป็น integer
+    y = request.form.get("y", type=int)  # รับพิกัด y และแปลงเป็น integer
+    color = request.form.get("color")  # รับสี เช่น #ff0000
+
+    # ตรวจสอบว่ามีรูปภาพหรือไม่
+    if image is None:
+        return jsonify({
+            "success": False,
+            "message": "ไม่พบไฟล์รูปภาพ"
+        }), 400
+
+    # ตรวจสอบว่ามีพิกัด x และ y หรือไม่
+    if x is None or y is None:
+        return jsonify({
+            "success": False,
+            "message": "ไม่พบพิกัด x หรือ y"
+        }), 400
+
+    # ตรวจสอบว่ามีสีหรือไม่
+    if not color:
+        return jsonify({
+            "success": False,
+            "message": "กรุณาเลือกสี"
+        }), 400
+
+    # ---------------------------------------------------------
+    # แปลงสีจาก #rrggbb เป็น RGB
+    # เช่น #ff0000 -> (255, 0, 0)
+    # ---------------------------------------------------------
+    if color.startswith("#"):
+        hex_color = color[1:]
+
+        if len(hex_color) != 6:
+            return jsonify({
+                "success": False,
+                "message": "รูปแบบสีไม่ถูกต้อง"
+            }), 400
+
+        try:
+            rgb = tuple(
+                int(hex_color[i:i + 2], 16)
+                for i in (0, 2, 4)
+            )
+        except ValueError:
+            return jsonify({
+                "success": False,
+                "message": "รูปแบบสีไม่ถูกต้อง"
+            }), 400
+    else:
+        return jsonify({
+            "success": False,
+            "message": "รูปแบบสีต้องเป็น #rrggbb"
+        }), 400
+
+    data = image.read()  # อ่านข้อมูลรูปภาพเป็น bytes
+
+    # ส่งรูป พิกัด และสีไปให้ AI process
+    result = process(
+        data,
+        user["id"],
+        model="recolor",
+        x=x,
+        y=y,
+        color=rgb
+    )
+
+    # ตรวจสอบว่าการเปลี่ยนสีสำเร็จหรือไม่
+    if result.get("status") == "ok":
+
+        # แปลงภาพที่เปลี่ยนสีแล้วเป็น Base64
+        image_base64 = base64.b64encode(
+            result["image_bytes"]
+        ).decode("utf-8")
+
+        # ส่งภาพกลับไปให้ Frontend
+        return jsonify({
+            "success": True,
+            "note": result.get("note"),
+            "image": image_base64
+        }), 200
+
+    # กรณี AI เปลี่ยนสีไม่สำเร็จ
+    return jsonify({
+        "success": False,
+        "message": result.get(
+            "note",
+            "เกิดข้อผิดพลาดในการเปลี่ยนสี"
+        )
+    }), 500
+
+
+# =========================================================
+# API สำหรับสร้างภาพจากข้อความ (TXT2img)
+# =========================================================
+@app.route("/api/txt2img/generate", methods=["POST"])  # สร้าง API สำหรับรับ Prompt และสร้างภาพ
+def txt2img_generate():  # ฟังก์ชันรับ Prompt จาก Frontend และสร้างภาพด้วย Forge
+
+    data = request.get_json(silent=True) or {}  # รับข้อมูล JSON จาก Frontend
+
+    prompt = data.get("prompt")  # อ่าน Prompt ที่ส่งมาจาก Frontend
+
+    if not isinstance(prompt, str) or not prompt.strip():  # ตรวจสอบว่ามี Prompt และเป็นข้อความหรือไม่
+        return jsonify({  # ส่งข้อความแจ้งเตือนกลับไป
+            "success": False,  # บอกว่าการทำงานไม่สำเร็จ
+            "message": "กรุณากรอก Prompt"  # แจ้งให้ผู้ใช้กรอก Prompt
+        }), 400  # ส่ง HTTP status 400
+
+    try:
+        image_base64 = generate_image(prompt)  # ส่ง Prompt ไปให้ Forge สร้างภาพ
+
+        return jsonify({  # ส่งผลลัพธ์กลับไปให้ Frontend
+            "success": True,  # บอกว่าสร้างภาพสำเร็จ
+            "image": image_base64  # ส่งภาพที่สร้างแล้วกลับไป
+        }), 200  # ส่ง HTTP status 200
+
+    except ForgeError as exc:  # ตรวจสอบกรณี Forge เกิดข้อผิดพลาด
+        return jsonify({  # ส่งข้อความ error กลับไปให้ Frontend
+            "success": False,  # บอกว่าสร้างภาพไม่สำเร็จ
+            "message": str(exc)  # ส่งข้อความ error ที่เกิดจาก Forge
+        }), 500  # ส่ง HTTP status 500
+
+# =========================================================
+# API สำหรับแก้ไขภาพที่สร้างจาก TXT2img
+# =========================================================
+@app.route("/api/txt2img/edit", methods=["POST"])  # สร้าง API สำหรับแก้ไขภาพที่ Generate แล้ว
+def txt2img_edit():  # ฟังก์ชันรับข้อมูลจาก Frontend แล้วส่งต่อให้ AI
+
+    user = session.get("user")  # อ่านข้อมูล user จาก session
+
+    if user is None:  # ตรวจสอบว่าผู้ใช้ Login แล้วหรือยัง
+        return jsonify({  # ส่งข้อความแจ้งเตือนกลับไป
+            "success": False,  # บอกว่าการทำงานไม่สำเร็จ
+            "message": "กรุณาเข้าสู่ระบบ"  # แจ้งให้ Login ก่อน
+        }), 401  # ส่ง HTTP status 401
+
+
+    data = request.get_json(silent=True) or {}  # รับข้อมูล JSON จาก Frontend
+
+    image_url = data.get("image_url")  # รับรูปภาพที่ Generate จาก Frontend
+    x = data.get("x")  # รับตำแหน่ง x ที่ผู้ใช้คลิก
+    y = data.get("y")  # รับตำแหน่ง y ที่ผู้ใช้คลิก
+    model = data.get("model")  # รับชื่อโมเดลที่ผู้ใช้เลือก
+    prompt = data.get("prompt")  # รับ Prompt จาก Frontend
+
+
+    if not image_url:  # ตรวจสอบว่ามีรูปภาพหรือไม่
+        return jsonify({  # ส่งข้อความแจ้งเตือนกลับไป
+            "success": False,  # บอกว่าการทำงานไม่สำเร็จ
+            "message": "ไม่พบรูปภาพ"  # แจ้งว่าไม่มีรูปภาพ
+        }), 400  # ส่ง HTTP status 400
+
+
+    if not model:  # ตรวจสอบว่ามีการเลือกโมเดลหรือไม่
+        return jsonify({  # ส่งข้อความแจ้งเตือนกลับไป
+            "success": False,  # บอกว่าการทำงานไม่สำเร็จ
+            "message": "กรุณาเลือก AI Model"  # แจ้งให้เลือกโมเดล
+        }), 400  # ส่ง HTTP status 400
+
+
+    try:
+        # =====================================================
+        # แปลงรูปจาก Data URL ที่ Frontend ส่งมาเป็น bytes
+        # =====================================================
+
+        if "," in image_url:  # ตรวจสอบว่ารูปอยู่ในรูปแบบ Data URL หรือไม่
+            image_base64 = image_url.split(",", 1)[1]  # แยกส่วน Base64 ออกจากหัวของ Data URL
+        else:
+            image_base64 = image_url  # ถ้าไม่มีหัว Data URL ให้ใช้ Base64 ที่ส่งมาโดยตรง
+
+        image_bytes = base64.b64decode(image_base64)  # แปลง Base64 เป็นข้อมูลรูปภาพ
+
+
+        # =====================================================
+        # ส่งรูปและข้อมูลไปให้ AI process
+        # =====================================================
+
+        result = process(  # เรียกฟังก์ชัน process เพื่อเลือก AI ตาม model
+            image_bytes,  # ส่งข้อมูลรูปภาพ
+            user["id"],  # ส่ง ID ของผู้ใช้
+            model=model,  # ส่งชื่อโมเดล
+            prompt=prompt,  # ส่ง Prompt
+            x=x,  # ส่งตำแหน่ง x
+            y=y,  # ส่งตำแหน่ง y
+        )
+
+
+        if result.get("status") == "ok":  # ตรวจสอบว่า AI ประมวลผลสำเร็จหรือไม่
+
+            image_base64 = base64.b64encode(  # แปลงรูปที่ได้จาก AI เป็น Base64
+                result["image_bytes"]  # ข้อมูลรูปภาพที่ AI ส่งกลับมา
+            ).decode("utf-8")  # แปลง Base64 bytes เป็นข้อความ
+
+
+            return jsonify({  # ส่งผลลัพธ์กลับไปให้ Frontend
+                "success": True,  # บอกว่าประมวลผลสำเร็จ
+                "image": image_base64,  # ส่งรูปภาพกลับไป
+                "message": result.get("note")  # ส่งข้อความจาก AI กลับไป
+            }), 200  # ส่ง HTTP status 200
+
+
+        return jsonify({  # ถ้า AI ประมวลผลไม่สำเร็จ
+            "success": False,  # บอกว่าการทำงานไม่สำเร็จ
+            "message": result.get(
+                "note",
+                "AI processing failed."
+            )  # ส่งข้อความ error จาก AI
+        }), 500  # ส่ง HTTP status 500
+
+
+    except (ValueError, TypeError, base64.binascii.Error) as exc:  # ตรวจสอบกรณีรูปแบบข้อมูลไม่ถูกต้อง
+
+        return jsonify({  # ส่งข้อความ error กลับไป
+            "success": False,  # บอกว่าการทำงานไม่สำเร็จ
+            "message": str(exc)  # แสดงข้อความ error
+        }), 400  # ส่ง HTTP status 400
+
+    
 # =========================================================
 # ฟังก์ชันแสดงหน้า Image
 # =========================================================
@@ -315,7 +547,7 @@ def about():  # ฟังก์ชันแสดงหน้า About
     return render_template("about.html", user=user)  # แสดงหน้า about.html
 
 # =========================================================
-# ฟังก์ชันแสดงหน้า About
+# ฟังก์ชันแสดงหน้า TXT2img
 # =========================================================
 @app.route("/TXT2img")
 def txt2img():
