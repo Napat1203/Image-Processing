@@ -199,11 +199,21 @@
                                             ControlNet
                                         </button>
 
+                                        <button class="model-option" data-model="recolor">
+                                            Recolor
+                                        </button> 
+
+                                        <button class="model-option" data-model="inpaint">
+                                            Inpaint
+                                        </button>
+
                                     </div>
 
                                 </div>
 
-                                <div class="color-picker">
+                                <p id="point-instruction" hidden></p>
+
+                                <div class="color-picker" hidden>
                                     <canvas id="color-wheel" width="220" height="220"
                                             aria-label="เลือกสี"></canvas>
 
@@ -216,15 +226,11 @@
                                 </div>
 
                                 <div class="controlnet-prompt" id="controlnet-prompt-box" hidden>
-                                    <label for="controlnet-prompt">Prompt for ControlNet</label>
+                                    <label for="controlnet-prompt">Prompt</label>
                                     <textarea id="controlnet-prompt"
-                                              rows="3"
-                                              placeholder="Describe the image you want to generate"></textarea>
+                                            rows="3"
+                                            placeholder="Describe what you want to generate"></textarea>
                                 </div>
-
-                                <button class="generate-btn" id="recolor-btn" type="button">
-                                    Change Color
-                                </button>
 
                                 <div class="arrow">
                                     →

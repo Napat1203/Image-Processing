@@ -120,11 +120,23 @@ if (modelBtn && modelMenu) {
 
         option.addEventListener("click", function () {
 
-            selectedModel = option.dataset.model || option.textContent;
+            selectedModel = option.dataset.model || option.textContent.trim().toLowerCase();
 
             modelBtn.textContent = option.textContent + " ▼";
-
             modelMenu.style.display = "none";
+
+            if (!["recolor", "inpaint"].includes(selectedModel)) {
+                selectedImagePoint = null;
+                if (imageSelectionMarker) imageSelectionMarker.hidden = true;
+                selectedWebcamPoint = null;
+                if (webcamSelectionMarker) webcamSelectionMarker.hidden = true;
+                if (colorPicker) colorPicker.style.display = "none";
+            }
+
+            updateControlnetPromptVisibility();
+
+            const currentImage = fileInput?.files?.[0];
+            updatePosePreview(currentImage);
 
         });
 
@@ -139,6 +151,7 @@ const chooseFile = document.getElementById("choose-file");
 const fileInput = document.getElementById("file-input");
 const fileName = document.getElementById("file-name");
 const imagePreview = document.getElementById("image-preview");
+
 let selectedImagePoint = null;
 let selectedWebcamPoint = null;
 let selectedTxtPoint = null;
@@ -198,9 +211,14 @@ if (chooseFile && fileInput && fileName) {
             selectedImagePoint = null;
             if (imageSelectionMarker) imageSelectionMarker.hidden = true;
             if (colorPicker) colorPicker.style.display = "none";
+            updateControlnetPromptVisibility();
 
             // Create image preview
             const imageURL = URL.createObjectURL(file);
+
+            imagePreview.addEventListener("load", function handlePreviewLoad() {
+            updatePosePreview(file);
+            }, { once: true });
 
             imagePreview.src = imageURL;
             imagePreview.style.display = "block";
@@ -215,6 +233,15 @@ if (chooseFile && fileInput && fileName) {
 
 if (imagePreview) {
     imagePreview.addEventListener("click", function (event) {
+
+        if (!["recolor", "inpaint"].includes(selectedModel)) {
+
+            selectedImagePoint = null;
+            if (imageSelectionMarker) imageSelectionMarker.hidden = true;
+            if (colorPicker) colorPicker.style.display = "none";
+            return;
+        }
+
         selectedImagePoint = getMediaPoint(
             event,
             imagePreview,
@@ -234,7 +261,16 @@ if (imagePreview) {
             imagePreview,
             imageSelectionMarker
         );
-        if (colorPicker) colorPicker.style.display = "grid";
+        if (colorPicker) {
+            colorPicker.style.display =
+                selectedModel === "recolor" ? "grid" : "none";
+        }
+
+        const pointInstruction = document.getElementById("point-instruction");
+        if (pointInstruction) {
+            pointInstruction.hidden = true;
+        }
+
         console.log("Selected image point:", selectedImagePoint);
     });
 }
@@ -242,6 +278,13 @@ if (imagePreview) {
 // Webcam point selection uses the frozen video frame.
 if (webcam) {
     webcam.addEventListener("click", function (event) {
+        if (!["recolor", "inpaint"].includes(selectedModel)) {
+            selectedWebcamPoint = null;
+            if (webcamSelectionMarker) webcamSelectionMarker.hidden = true;
+            if (colorPicker) colorPicker.style.display = "none";
+            return;
+        }
+
         if (!isFrozen) {
             alert("Please stop the webcam before selecting a point.");
             return;
@@ -261,7 +304,10 @@ if (webcam) {
                 webcam,
                 webcamSelectionMarker
             );
-            if (colorPicker) colorPicker.style.display = "grid";
+            if (colorPicker) {
+                colorPicker.style.display =
+                    selectedModel === "recolor" ? "grid" : "none";
+            }   
             console.log("Selected webcam point:", selectedWebcamPoint);
         } else if (webcamSelectionMarker) {
             webcamSelectionMarker.hidden = true;
@@ -287,17 +333,107 @@ const colorValue = document.getElementById("color-value");
 const controlnetPromptBox = document.getElementById("controlnet-prompt-box");
 const controlnetPromptInput = document.getElementById("controlnet-prompt");
 
+const poseOverlay = document.getElementById("pose-overlay");
+let posePreviewRequestId = 0;
+
+async function updatePosePreview(imageBlob) {
+    const requestId = ++posePreviewRequestId;
+
+    if (!poseOverlay) return;
+
+    if (selectedModel !== "controlnet" || !imageBlob) {
+        poseOverlay.hidden = true;
+        const context = poseOverlay.getContext("2d");
+        context?.clearRect(0, 0, poseOverlay.width, poseOverlay.height);
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("image", imageBlob, "pose-input.png");
+
+    try {
+        const response = await fetch("/api/controlnet/preview", {
+            method: "POST",
+            body: formData
+        });
+
+        const contentType = response.headers.get("content-type") || "";
+        if (!response.ok || !contentType.includes("application/json")) {
+            throw new Error("Preview API ยังไม่พร้อม หรือส่งข้อมูลกลับมาไม่ใช่ JSON");
+        }
+
+        const data = await response.json();
+
+        if (!data.image) {
+            throw new Error("คำตอบจาก Preview API ไม่มีข้อมูลภาพ");
+        }
+
+        // ไม่วาดผลจากคำขอเก่าทับภาพที่เลือกใหม่
+        if (requestId !== posePreviewRequestId) return;
+
+        const previewImage = new Image();
+
+        previewImage.onload = function () {
+            if (requestId !== posePreviewRequestId) return;
+
+            poseOverlay.width = previewImage.naturalWidth;
+            poseOverlay.height = previewImage.naturalHeight;
+
+            const context = poseOverlay.getContext("2d");
+            context.clearRect(0, 0, poseOverlay.width, poseOverlay.height);
+            context.drawImage(
+                previewImage,
+                0,
+                0,
+                poseOverlay.width,
+                poseOverlay.height
+            );
+
+            poseOverlay.hidden = false;
+        };
+
+        previewImage.onerror = function () {
+            console.error("โหลดภาพ ControlNet preview ไม่สำเร็จ");
+            poseOverlay.hidden = true;
+        };
+
+        previewImage.src = data.image;
+
+    } catch (error) {
+        console.error("ControlNet preview error:", error);
+        poseOverlay.hidden = true;
+    }
+}
+
 function updateControlnetPromptVisibility() {
+    const needsPrompt = ["controlnet", "inpaint"].includes(selectedModel);
+
     if (controlnetPromptBox) {
-        controlnetPromptBox.hidden = selectedModel !== "controlnet";
+        controlnetPromptBox.hidden = !needsPrompt;
+
+        const label = controlnetPromptBox.querySelector("label");
+        if (label) {
+            label.textContent =
+                selectedModel === "inpaint"
+                    ? "Prompt for Inpainting"
+                    : "Prompt for ControlNet";
+        }
+    }
+
+    if (colorPicker) {
+        colorPicker.style.display =
+            selectedModel === "recolor" && selectedImagePoint
+                ? "grid"
+                : "none";
+    }
+
+    const pointInstruction = document.getElementById("point-instruction");
+    if (pointInstruction) {
+        pointInstruction.hidden = true;
     }
 }
 
 updateControlnetPromptVisibility();
-
-modelOptions.forEach(function (option) {
-    option.addEventListener("click", updateControlnetPromptVisibility);
-});
 
 function hslToRgb(h, s, l) {
     const hue = h / 360;
@@ -404,11 +540,37 @@ if (generateBtn && resultText && resultImage) {
             return;
         }
 
+        const selectedPoint = isWebcamPage
+            ? selectedWebcamPoint
+            : selectedImagePoint;
+
         if (selectedModel === "controlnet" && !controlnetPromptInput?.value.trim()) {
             resultText.textContent = "Please enter a prompt for ControlNet.";
             resultImage.style.display = "none";
             controlnetPromptInput?.focus();
             return;
+        } 
+
+        if (selectedModel === "recolor" && !selectedPoint) {
+                resultText.textContent = "Click the part of the image you want to recolor first.";
+                resultImage.style.display = "none";
+                return;
+            }
+
+        if (selectedModel === "inpaint") {
+            if (!controlnetPromptInput?.value.trim()) {
+                resultText.textContent = "Please enter a prompt for Inpainting.";
+                resultImage.style.display = "none";
+                controlnetPromptInput?.focus();
+                return;
+            }
+
+            if (!selectedPoint) {
+                resultText.textContent =
+                    "Click the part of the image you want to redraw first.";
+                resultImage.style.display = "none";
+                return;
+            }
         }
 
         // ================= Prepare image =================
@@ -472,18 +634,33 @@ if (generateBtn && resultText && resultImage) {
         try {
 
             const formData = new FormData();
+            formData.append("image", imageBlob, "source.png");
 
-            formData.append("image", imageBlob);
-            formData.append("model", selectedModel);
-            if (selectedModel === "controlnet") {
-                formData.append("prompt", controlnetPromptInput.value.trim());
+            let endpoint = "/api/process-image";
+
+            if (selectedModel === "recolor") {
+                endpoint = "/api/recolor";
+                formData.append("x", String(selectedPoint.x));
+                formData.append("y", String(selectedPoint.y));
+                formData.append("color", selectedColorInput.value);
+                formData.append("source", isWebcamPage ? "webcam" : "upload");
+            } else {
+                formData.append("model", selectedModel);
+
+                if (selectedModel === "controlnet" || selectedModel === "inpaint") {
+                    formData.append("prompt", controlnetPromptInput.value.trim());
+                }
+
+                if (selectedModel === "inpaint") {
+                    formData.append("x", String(selectedPoint.x));
+                    formData.append("y", String(selectedPoint.y));
+                }
             }
 
-            const response = await fetch("/api/process-image", {
+            const response = await fetch(endpoint, {
                 method: "POST",
                 body: formData
             });
-
             const data = await response.json();
 
             if (!response.ok || !data.success) {
@@ -631,9 +808,33 @@ const finalDownloadBtn = document.getElementById("download-btn");
 
 const txtModelBtn = document.getElementById("txt-model-btn");
 const txtModelMenu = document.getElementById("txt-model-menu");
-const txtModelOptions = document.querySelectorAll(".txt-model-option");
+const txtModelOptions = txtModelMenu
+    ? txtModelMenu.querySelectorAll(".txt-model-option, .model-option")
+    : [];
 
 let txtSelectedModel = "";
+
+function updateTxt2imgEditControls() {
+    const needsPrompt = ["controlnet", "inpaint"].includes(txtSelectedModel);
+
+    if (controlnetPromptBox) {
+        controlnetPromptBox.hidden = !needsPrompt;
+
+        const label = controlnetPromptBox.querySelector("label");
+        if (label) {
+            label.textContent = txtSelectedModel === "inpaint"
+                ? "Prompt for Inpainting"
+                : "Prompt for ControlNet";
+        }
+    }
+
+    if (colorPicker) {
+        colorPicker.style.display =
+            txtSelectedModel === "recolor" && selectedTxtPoint
+                ? "grid"
+                : "none";
+    }
+}
 
 // Select a point on the generated image for the TXT2img edit request.
 if (promptInput && resultImage) {
@@ -649,6 +850,8 @@ if (promptInput && resultImage) {
         if (selectedTxtPoint) {
             console.log("Selected TXT2img point:", selectedTxtPoint);
         }
+
+        updateTxt2imgEditControls();
     });
 }
 
@@ -679,6 +882,7 @@ if (promptInput && txtGenerateBtn) {
         txtGenerateBtn.disabled = true;
         txtGenerateBtn.textContent = "Generating...";
         selectedTxtPoint = null;
+        updateTxt2imgEditControls();
         resultImage.style.display = "none";
 
         try {
@@ -741,12 +945,14 @@ if (txtModelBtn && txtModelMenu) {
 
         option.addEventListener("click", function () {
 
-            txtSelectedModel = option.dataset.model || option.textContent;
+            txtSelectedModel = option.dataset.model ||
+                option.textContent.trim().toLowerCase();
 
             txtModelBtn.textContent =
                 option.textContent + " ▼";
 
             txtModelMenu.style.display = "none";
+            updateTxt2imgEditControls();
 
         });
 
@@ -757,23 +963,47 @@ if (txtModelBtn && txtModelMenu) {
 
 if (editGenerateBtn && promptInput && resultImage && finalResultImage) {
     editGenerateBtn.addEventListener("click", async function () {
-        if (!selectedTxtPoint) {
-            alert("Click a point on the generated image first.");
-            return;
-        }
-
         if (!txtSelectedModel) {
             alert("Please select an AI model.");
             return;
         }
 
+        const needsPoint = ["recolor", "inpaint"].includes(txtSelectedModel);
+        if (needsPoint && !selectedTxtPoint) {
+            alert("Click the part of the generated image you want to edit first.");
+            return;
+        }
+
+        const needsPrompt = ["controlnet", "inpaint"].includes(txtSelectedModel);
+        const editPrompt = needsPrompt
+            ? controlnetPromptInput?.value.trim() || ""
+            : promptInput.value.trim();
+
+        if (needsPrompt && !editPrompt) {
+            alert(`Please enter a prompt for ${txtSelectedModel === "inpaint" ? "Inpainting" : "ControlNet"}.`);
+            controlnetPromptInput?.focus();
+            return;
+        }
+
+        if (txtSelectedModel === "recolor" && !selectedColorInput?.value) {
+            alert("Please select a color first.");
+            return;
+        }
+
         const payload = {
             image_url: resultImage.currentSrc || resultImage.src,
-            x: selectedTxtPoint.x,
-            y: selectedTxtPoint.y,
             model: txtSelectedModel,
-            prompt: promptInput.value.trim()
+            prompt: editPrompt
         };
+
+        if (selectedTxtPoint) {
+            payload.x = selectedTxtPoint.x;
+            payload.y = selectedTxtPoint.y;
+        }
+
+        if (txtSelectedModel === "recolor") {
+            payload.color = selectedColorInput.value;
+        }
 
         editGenerateBtn.disabled = true;
         editGenerateBtn.textContent = "Generating...";
