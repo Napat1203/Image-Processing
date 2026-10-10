@@ -128,6 +128,8 @@ if (modelBtn && modelMenu) {
             if (!["recolor", "inpaint"].includes(selectedModel)) {
                 selectedImagePoint = null;
                 if (imageSelectionMarker) imageSelectionMarker.hidden = true;
+                selectedWebcamPoint = null;
+                if (webcamSelectionMarker) webcamSelectionMarker.hidden = true;
                 if (colorPicker) colorPicker.style.display = "none";
             }
 
@@ -231,13 +233,15 @@ if (chooseFile && fileInput && fileName) {
 
 if (imagePreview) {
     imagePreview.addEventListener("click", function (event) {
+
         if (!["recolor", "inpaint"].includes(selectedModel)) {
+
             selectedImagePoint = null;
             if (imageSelectionMarker) imageSelectionMarker.hidden = true;
             if (colorPicker) colorPicker.style.display = "none";
             return;
         }
-        
+
         selectedImagePoint = getMediaPoint(
             event,
             imagePreview,
@@ -274,6 +278,13 @@ if (imagePreview) {
 // Webcam point selection uses the frozen video frame.
 if (webcam) {
     webcam.addEventListener("click", function (event) {
+        if (!["recolor", "inpaint"].includes(selectedModel)) {
+            selectedWebcamPoint = null;
+            if (webcamSelectionMarker) webcamSelectionMarker.hidden = true;
+            if (colorPicker) colorPicker.style.display = "none";
+            return;
+        }
+
         if (!isFrozen) {
             alert("Please stop the webcam before selecting a point.");
             return;
@@ -293,7 +304,10 @@ if (webcam) {
                 webcam,
                 webcamSelectionMarker
             );
-            if (colorPicker) colorPicker.style.display = "grid";
+            if (colorPicker) {
+                colorPicker.style.display =
+                    selectedModel === "recolor" ? "grid" : "none";
+            }   
             console.log("Selected webcam point:", selectedWebcamPoint);
         } else if (webcamSelectionMarker) {
             webcamSelectionMarker.hidden = true;
@@ -526,6 +540,10 @@ if (generateBtn && resultText && resultImage) {
             return;
         }
 
+        const selectedPoint = isWebcamPage
+            ? selectedWebcamPoint
+            : selectedImagePoint;
+
         if (selectedModel === "controlnet" && !controlnetPromptInput?.value.trim()) {
             resultText.textContent = "Please enter a prompt for ControlNet.";
             resultImage.style.display = "none";
@@ -533,7 +551,7 @@ if (generateBtn && resultText && resultImage) {
             return;
         } 
 
-        if (selectedModel === "recolor" && !selectedImagePoint) {
+        if (selectedModel === "recolor" && !selectedPoint) {
                 resultText.textContent = "Click the part of the image you want to recolor first.";
                 resultImage.style.display = "none";
                 return;
@@ -547,7 +565,7 @@ if (generateBtn && resultText && resultImage) {
                 return;
             }
 
-            if (!selectedImagePoint) {
+            if (!selectedPoint) {
                 resultText.textContent =
                     "Click the part of the image you want to redraw first.";
                 resultImage.style.display = "none";
@@ -622,10 +640,10 @@ if (generateBtn && resultText && resultImage) {
 
             if (selectedModel === "recolor") {
                 endpoint = "/api/recolor";
-                formData.append("x", String(selectedImagePoint.x));
-                formData.append("y", String(selectedImagePoint.y));
+                formData.append("x", String(selectedPoint.x));
+                formData.append("y", String(selectedPoint.y));
                 formData.append("color", selectedColorInput.value);
-                formData.append("source", "upload");
+                formData.append("source", isWebcamPage ? "webcam" : "upload");
             } else {
                 formData.append("model", selectedModel);
 
@@ -634,8 +652,8 @@ if (generateBtn && resultText && resultImage) {
                 }
 
                 if (selectedModel === "inpaint") {
-                    formData.append("x", String(selectedImagePoint.x));
-                    formData.append("y", String(selectedImagePoint.y));
+                    formData.append("x", String(selectedPoint.x));
+                    formData.append("y", String(selectedPoint.y));
                 }
             }
 
