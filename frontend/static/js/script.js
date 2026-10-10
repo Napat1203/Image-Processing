@@ -808,9 +808,33 @@ const finalDownloadBtn = document.getElementById("download-btn");
 
 const txtModelBtn = document.getElementById("txt-model-btn");
 const txtModelMenu = document.getElementById("txt-model-menu");
-const txtModelOptions = document.querySelectorAll(".txt-model-option");
+const txtModelOptions = txtModelMenu
+    ? txtModelMenu.querySelectorAll(".txt-model-option, .model-option")
+    : [];
 
 let txtSelectedModel = "";
+
+function updateTxt2imgEditControls() {
+    const needsPrompt = ["controlnet", "inpaint"].includes(txtSelectedModel);
+
+    if (controlnetPromptBox) {
+        controlnetPromptBox.hidden = !needsPrompt;
+
+        const label = controlnetPromptBox.querySelector("label");
+        if (label) {
+            label.textContent = txtSelectedModel === "inpaint"
+                ? "Prompt for Inpainting"
+                : "Prompt for ControlNet";
+        }
+    }
+
+    if (colorPicker) {
+        colorPicker.style.display =
+            txtSelectedModel === "recolor" && selectedTxtPoint
+                ? "grid"
+                : "none";
+    }
+}
 
 // Select a point on the generated image for the TXT2img edit request.
 if (promptInput && resultImage) {
@@ -826,6 +850,8 @@ if (promptInput && resultImage) {
         if (selectedTxtPoint) {
             console.log("Selected TXT2img point:", selectedTxtPoint);
         }
+
+        updateTxt2imgEditControls();
     });
 }
 
@@ -856,6 +882,7 @@ if (promptInput && txtGenerateBtn) {
         txtGenerateBtn.disabled = true;
         txtGenerateBtn.textContent = "Generating...";
         selectedTxtPoint = null;
+        updateTxt2imgEditControls();
         resultImage.style.display = "none";
 
         try {
@@ -918,12 +945,14 @@ if (txtModelBtn && txtModelMenu) {
 
         option.addEventListener("click", function () {
 
-            txtSelectedModel = option.dataset.model || option.textContent;
+            txtSelectedModel = option.dataset.model ||
+                option.textContent.trim().toLowerCase();
 
             txtModelBtn.textContent =
                 option.textContent + " ▼";
 
             txtModelMenu.style.display = "none";
+            updateTxt2imgEditControls();
 
         });
 
@@ -934,23 +963,47 @@ if (txtModelBtn && txtModelMenu) {
 
 if (editGenerateBtn && promptInput && resultImage && finalResultImage) {
     editGenerateBtn.addEventListener("click", async function () {
-        if (!selectedTxtPoint) {
-            alert("Click a point on the generated image first.");
-            return;
-        }
-
         if (!txtSelectedModel) {
             alert("Please select an AI model.");
             return;
         }
 
+        const needsPoint = ["recolor", "inpaint"].includes(txtSelectedModel);
+        if (needsPoint && !selectedTxtPoint) {
+            alert("Click the part of the generated image you want to edit first.");
+            return;
+        }
+
+        const needsPrompt = ["controlnet", "inpaint"].includes(txtSelectedModel);
+        const editPrompt = needsPrompt
+            ? controlnetPromptInput?.value.trim() || ""
+            : promptInput.value.trim();
+
+        if (needsPrompt && !editPrompt) {
+            alert(`Please enter a prompt for ${txtSelectedModel === "inpaint" ? "Inpainting" : "ControlNet"}.`);
+            controlnetPromptInput?.focus();
+            return;
+        }
+
+        if (txtSelectedModel === "recolor" && !selectedColorInput?.value) {
+            alert("Please select a color first.");
+            return;
+        }
+
         const payload = {
             image_url: resultImage.currentSrc || resultImage.src,
-            x: selectedTxtPoint.x,
-            y: selectedTxtPoint.y,
             model: txtSelectedModel,
-            prompt: promptInput.value.trim()
+            prompt: editPrompt
         };
+
+        if (selectedTxtPoint) {
+            payload.x = selectedTxtPoint.x;
+            payload.y = selectedTxtPoint.y;
+        }
+
+        if (txtSelectedModel === "recolor") {
+            payload.color = selectedColorInput.value;
+        }
 
         editGenerateBtn.disabled = true;
         editGenerateBtn.textContent = "Generating...";
