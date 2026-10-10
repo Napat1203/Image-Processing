@@ -135,8 +135,6 @@ if (modelBtn && modelMenu) {
 
             updateControlnetPromptVisibility();
 
-            const currentImage = fileInput?.files?.[0];
-            updatePosePreview(currentImage);
 
         });
 
@@ -215,10 +213,6 @@ if (chooseFile && fileInput && fileName) {
 
             // Create image preview
             const imageURL = URL.createObjectURL(file);
-
-            imagePreview.addEventListener("load", function handlePreviewLoad() {
-            updatePosePreview(file);
-            }, { once: true });
 
             imagePreview.src = imageURL;
             imagePreview.style.display = "block";
@@ -333,77 +327,8 @@ const colorValue = document.getElementById("color-value");
 const controlnetPromptBox = document.getElementById("controlnet-prompt-box");
 const controlnetPromptInput = document.getElementById("controlnet-prompt");
 
-const poseOverlay = document.getElementById("pose-overlay");
+
 let posePreviewRequestId = 0;
-
-async function updatePosePreview(imageBlob) {
-    const requestId = ++posePreviewRequestId;
-
-    if (!poseOverlay) return;
-
-    if (selectedModel !== "controlnet" || !imageBlob) {
-        poseOverlay.hidden = true;
-        const context = poseOverlay.getContext("2d");
-        context?.clearRect(0, 0, poseOverlay.width, poseOverlay.height);
-        return;
-    }
-
-    const formData = new FormData();
-    formData.append("image", imageBlob, "pose-input.png");
-
-    try {
-        const response = await fetch("/api/controlnet/preview", {
-            method: "POST",
-            body: formData
-        });
-
-        const contentType = response.headers.get("content-type") || "";
-        if (!response.ok || !contentType.includes("application/json")) {
-            throw new Error("Preview API ยังไม่พร้อม หรือส่งข้อมูลกลับมาไม่ใช่ JSON");
-        }
-
-        const data = await response.json();
-
-        if (!data.image) {
-            throw new Error("คำตอบจาก Preview API ไม่มีข้อมูลภาพ");
-        }
-
-        // ไม่วาดผลจากคำขอเก่าทับภาพที่เลือกใหม่
-        if (requestId !== posePreviewRequestId) return;
-
-        const previewImage = new Image();
-
-        previewImage.onload = function () {
-            if (requestId !== posePreviewRequestId) return;
-
-            poseOverlay.width = previewImage.naturalWidth;
-            poseOverlay.height = previewImage.naturalHeight;
-
-            const context = poseOverlay.getContext("2d");
-            context.clearRect(0, 0, poseOverlay.width, poseOverlay.height);
-            context.drawImage(
-                previewImage,
-                0,
-                0,
-                poseOverlay.width,
-                poseOverlay.height
-            );
-
-            poseOverlay.hidden = false;
-        };
-
-        previewImage.onerror = function () {
-            console.error("โหลดภาพ ControlNet preview ไม่สำเร็จ");
-            poseOverlay.hidden = true;
-        };
-
-        previewImage.src = data.image;
-
-    } catch (error) {
-        console.error("ControlNet preview error:", error);
-        poseOverlay.hidden = true;
-    }
-}
 
 function updateControlnetPromptVisibility() {
     const needsPrompt = ["controlnet", "inpaint"].includes(selectedModel);
