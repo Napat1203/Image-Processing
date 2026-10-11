@@ -247,9 +247,12 @@ def process_image():  # ฟังก์ชันรับรูปจากห�
             "message": "กรุณาเข้าสู่ระบบ"  # แจ้งให้ Login ก่อน
         }), 401  # ส่ง HTTP status 401
 
-    image = request.files.get("image")  # รับรูปภาพจากหน้าเว็บ
+    image = request.files.get("image")   # รับรูปภาพจากหน้าเว็บ
     model = request.form.get("model") or "stub"  # รับชื่อ AI model
-    prompt = request.form.get("prompt") # รับข้อความ prompt จากหน้าเว็บ
+    prompt = request.form.get("prompt")  # รับข้อความ prompt จากหน้าเว็บ
+    x = request.form.get("x", type=int)  # รับตำแหน่ง x ที่ผู้ใช้คลิกจาก Frontend และแปลงเป็นจำนวนเต็ม
+    y = request.form.get("y", type=int)  # รับตำแหน่ง y ที่ผู้ใช้คลิกจาก Frontend และแปลงเป็นจำนวนเต็ม
+
 
     if not image:              # ตรวจสอบว่ามีรูปภาพหรือไม่
         return jsonify({       # ส่งข้อความแจ้งเตือนกลับไป
@@ -259,7 +262,14 @@ def process_image():  # ฟังก์ชันรับรูปจากห�
 
     data = image.read()  # อ่านข้อมูลรูปภาพเป็น bytes
 
-    result = process(data, user["id"], model, prompt=prompt)  # ส่งรูป user_id ชื่อ model และ prompt ไปให้ AI ประมวลผล
+    result = process(  # เรียกฟังก์ชัน process เพื่อส่งข้อมูลไปให้ AI ประมวลผล
+        data,           # ส่งข้อมูลรูปภาพในรูปแบบ bytes
+        user["id"],     # ส่ง ID ของผู้ใช้ที่เข้าสู่ระบบ
+        model,          # ส่งชื่อโมเดล AI ที่ผู้ใช้เลือก
+        prompt=prompt,  # ส่งข้อความ Prompt ไปให้ AI
+        x=x,            # ส่งตำแหน่ง x ที่ผู้ใช้คลิกไปให้ AI
+        y=y             # ส่งตำแหน่ง y ที่ผู้ใช้คลิกไปให้ AI
+    )
     
     if result.get("status") == "ok":  # ตรวจสอบว่า AI ประมวลผลสำเร็จหรือไม่
         image_base64 = base64.b64encode(result["image_bytes"]).decode("utf-8")
@@ -415,97 +425,98 @@ def txt2img_generate():  # ฟังก์ชันรับ Prompt จาก Fr
 # =========================================================
 # API สำหรับแก้ไขภาพที่สร้างจาก TXT2img
 # =========================================================
-@app.route("/api/txt2img/edit", methods=["POST"])  # สร้าง API สำหรับแก้ไขภาพที่ Generate แล้ว
-def txt2img_edit():  # ฟังก์ชันรับข้อมูลจาก Frontend แล้วส่งต่อให้ AI
+@app.route("/api/txt2img/edit", methods=["POST"])  # สร้าง API สำหรับรับคำขอแก้ไขรูปภาพที่ Generate แล้ว
+def txt2img_edit():  # ฟังก์ชันรับข้อมูลจาก Frontend แล้วส่งต่อให้ AI ประมวลผล
 
-    user = session.get("user")  # อ่านข้อมูล user จาก session
+    user = session.get("user")  # อ่านข้อมูลผู้ใช้จาก session
 
-    if user is None:  # ตรวจสอบว่าผู้ใช้ Login แล้วหรือยัง
-        return jsonify({  # ส่งข้อความแจ้งเตือนกลับไป
-            "success": False,  # บอกว่าการทำงานไม่สำเร็จ
-            "message": "กรุณาเข้าสู่ระบบ"  # แจ้งให้ Login ก่อน
-        }), 401  # ส่ง HTTP status 401
+    if user is None:       # ตรวจสอบว่าผู้ใช้ Login แล้วหรือยัง
+        return jsonify({   # ส่งข้อความแจ้งเตือนกลับไปยัง Frontend
+            "success": False,   # ระบุว่าการทำงานไม่สำเร็จ
+            "message": "กรุณาเข้าสู่ระบบ"  # แจ้งให้ผู้ใช้ Login ก่อนใช้งาน
+        }), 401  # ส่ง HTTP status 401 เมื่อยังไม่ได้เข้าสู่ระบบ
 
+    data = request.get_json(silent=True) or {}  # รับข้อมูล JSON จาก Frontend หากไม่มีข้อมูลให้ใช้ dict ว่าง
 
-    data = request.get_json(silent=True) or {}  # รับข้อมูล JSON จาก Frontend
+    image_url = data.get("image_url")  # รับข้อมูลรูปภาพที่ Generate จาก Frontend
+    x = data.get("x")            # รับตำแหน่ง x ที่ผู้ใช้คลิกบนรูปภาพ
+    y = data.get("y")            # รับตำแหน่ง y ที่ผู้ใช้คลิกบนรูปภาพ
+    model = data.get("model")    # รับชื่อโมเดล AI ที่ผู้ใช้เลือก
+    prompt = data.get("prompt")  # รับข้อความ Prompt ที่ใช้สั่งให้ AI แก้ไขรูปภาพ
+    color = data.get("color")    # รับค่าสีที่ผู้ใช้เลือกจาก Frontend
 
-    image_url = data.get("image_url")  # รับรูปภาพที่ Generate จาก Frontend
-    x = data.get("x")  # รับตำแหน่ง x ที่ผู้ใช้คลิก
-    y = data.get("y")  # รับตำแหน่ง y ที่ผู้ใช้คลิก
-    model = data.get("model")  # รับชื่อโมเดลที่ผู้ใช้เลือก
-    prompt = data.get("prompt")  # รับ Prompt จาก Frontend
+    if not image_url:       # ตรวจสอบว่ามีข้อมูลรูปภาพส่งมาหรือไม่
+        return jsonify({    # ส่งข้อความแจ้งเตือนกลับไปยัง Frontend
+            "success": False,        # ระบุว่าการทำงานไม่สำเร็จ
+            "message": "ไม่พบรูปภาพ"  # แจ้งว่าไม่มีข้อมูลรูปภาพ
+        }), 400  # ส่ง HTTP status 400 เมื่อข้อมูลที่ส่งมาไม่ครบถ้วน
 
+    if not model:  # ตรวจสอบว่าผู้ใช้เลือกโมเดล AI แล้วหรือไม่
+        return jsonify({        # ส่งข้อความแจ้งเตือนกลับไปยัง Frontend
+            "success": False,   # ระบุว่าการทำงานไม่สำเร็จ
+            "message": "กรุณาเลือก AI Model"  # แจ้งให้ผู้ใช้เลือกโมเดล AI
+        }), 400  # ส่ง HTTP status 400 เมื่อไม่มีชื่อโมเดล
 
-    if not image_url:  # ตรวจสอบว่ามีรูปภาพหรือไม่
-        return jsonify({  # ส่งข้อความแจ้งเตือนกลับไป
-            "success": False,  # บอกว่าการทำงานไม่สำเร็จ
-            "message": "ไม่พบรูปภาพ"  # แจ้งว่าไม่มีรูปภาพ
-        }), 400  # ส่ง HTTP status 400
+    try:  # เริ่มตรวจสอบและประมวลผลข้อมูลภายใน try เพื่อดักจับข้อผิดพลาด
 
+        if "," in image_url:  # ตรวจสอบว่าข้อมูลรูปภาพมีส่วนหัว Data URL หรือไม่
+            image_base64 = image_url.split(",", 1)[1]  # แยกเอาเฉพาะข้อมูล Base64 หลังเครื่องหมายจุลภาค
+        else:  # ทำงานเมื่อข้อมูลไม่มีส่วนหัว Data URL
+            image_base64 = image_url  # ใช้ข้อมูลที่ได้รับมาโดยตรง
 
-    if not model:  # ตรวจสอบว่ามีการเลือกโมเดลหรือไม่
-        return jsonify({  # ส่งข้อความแจ้งเตือนกลับไป
-            "success": False,  # บอกว่าการทำงานไม่สำเร็จ
-            "message": "กรุณาเลือก AI Model"  # แจ้งให้เลือกโมเดล
-        }), 400  # ส่ง HTTP status 400
+        image_bytes = base64.b64decode(image_base64)  # แปลงข้อมูลรูปภาพจาก Base64 เป็น bytes
 
+        if model == "recolor":  # ตรวจสอบว่าผู้ใช้เลือกโมเดลสำหรับเปลี่ยนสีรูปภาพหรือไม่
 
-    try:
-        # =====================================================
-        # แปลงรูปจาก Data URL ที่ Frontend ส่งมาเป็น bytes
-        # =====================================================
+            if not isinstance(color, str) or not color.startswith("#"):  # ตรวจสอบว่าค่าสีเป็นข้อความและขึ้นต้นด้วย #
+                return jsonify({       # ส่งข้อความแจ้งเตือนกลับไปยัง Frontend
+                    "success": False,  # ระบุว่าการทำงานไม่สำเร็จ
+                    "message": "กรุณาเลือกสีในรูปแบบ #rrggbb"  # แจ้งให้เลือกสีในรูปแบบ HEX เช่น #ff0000
+                }), 400  # ส่ง HTTP status 400 เมื่อรูปแบบค่าสีไม่ถูกต้อง
 
-        if "," in image_url:  # ตรวจสอบว่ารูปอยู่ในรูปแบบ Data URL หรือไม่
-            image_base64 = image_url.split(",", 1)[1]  # แยกส่วน Base64 ออกจากหัวของ Data URL
-        else:
-            image_base64 = image_url  # ถ้าไม่มีหัว Data URL ให้ใช้ Base64 ที่ส่งมาโดยตรง
+            hex_color = color[1:]  # ตัดเครื่องหมาย # ออกจากข้อความค่าสี
 
-        image_bytes = base64.b64decode(image_base64)  # แปลง Base64 เป็นข้อมูลรูปภาพ
+            if len(hex_color) != 6:    # ตรวจสอบว่าค่าสี HEX มีตัวอักษรหรือเลขครบ 6 ตัวหรือไม่
+                return jsonify({       # ส่งข้อความแจ้งเตือนกลับไปยัง Frontend
+                    "success": False,  # ระบุว่าการทำงานไม่สำเร็จ
+                    "message": "รูปแบบสีไม่ถูกต้อง"  # แจ้งว่ารูปแบบสีไม่ถูกต้อง
+                }), 400  # ส่ง HTTP status 400 เมื่อจำนวนตัวอักษรของสีไม่ถูกต้อง
 
+            rgb = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))  # แปลงค่าสี HEX เป็น RGB tuple เช่น #ff0000 เป็น (255, 0, 0)
 
-        # =====================================================
-        # ส่งรูปและข้อมูลไปให้ AI process
-        # =====================================================
+            color = rgb  # กำหนดค่าสีที่แปลงแล้วเพื่อส่งต่อให้ฟังก์ชันประมวลผล
 
-        result = process(  # เรียกฟังก์ชัน process เพื่อเลือก AI ตาม model
-            image_bytes,  # ส่งข้อมูลรูปภาพ
-            user["id"],  # ส่ง ID ของผู้ใช้
-            model=model,  # ส่งชื่อโมเดล
-            prompt=prompt,  # ส่ง Prompt
-            x=x,  # ส่งตำแหน่ง x
-            y=y,  # ส่งตำแหน่ง y
+        result = process(  # เรียกฟังก์ชัน process() เพื่อเลือกและเรียกใช้ AI ตามโมเดลที่ผู้ใช้เลือก
+            image_bytes,   # ส่งข้อมูลรูปภาพในรูปแบบ bytes ไปประมวลผล
+            user["id"],    # ส่ง ID ของผู้ใช้ที่เข้าสู่ระบบ
+            model=model,   # ส่งชื่อโมเดล AI ที่ต้องการใช้งาน
+            prompt=prompt, # ส่ง Prompt สำหรับสั่งให้ AI ทำงาน
+            x=x,           # ส่งตำแหน่ง x ที่ผู้ใช้คลิกบนรูปภาพ
+            y=y,           # ส่งตำแหน่ง y ที่ผู้ใช้คลิกบนรูปภาพ
+            color=color    # ส่งค่าสีที่ผู้ใช้เลือกไปให้ AI กรณีเปลี่ยนสีรูปภาพ
         )
 
+        if result.get("status") == "ok":  # ตรวจสอบว่าฟังก์ชัน process() ประมวลผลสำเร็จหรือไม่
 
-        if result.get("status") == "ok":  # ตรวจสอบว่า AI ประมวลผลสำเร็จหรือไม่
+            image_base64 = base64.b64encode(result["image_bytes"]).decode("utf-8")  # แปลงรูปภาพผลลัพธ์จาก AI เป็นข้อความ Base64
 
-            image_base64 = base64.b64encode(  # แปลงรูปที่ได้จาก AI เป็น Base64
-                result["image_bytes"]  # ข้อมูลรูปภาพที่ AI ส่งกลับมา
-            ).decode("utf-8")  # แปลง Base64 bytes เป็นข้อความ
+            return jsonify({  # ส่งข้อมูลผลลัพธ์กลับไปยัง Frontend ในรูปแบบ JSON
+                "success": True,  # ระบุว่าการประมวลผลสำเร็จ
+                "image": image_base64,  # ส่งรูปภาพที่ผ่านการประมวลผลแล้วกลับไป
+                "message": result.get("note")  # ส่งข้อความแจ้งผลจากฟังก์ชัน process()
+            }), 200  # ส่ง HTTP status 200 เมื่อดำเนินการสำเร็จ
 
+        return jsonify({  # ทำงานเมื่อฟังก์ชัน process() แจ้งว่าประมวลผลไม่สำเร็จ
+            "success": False,  # ระบุว่าการทำงานไม่สำเร็จ
+            "message": result.get("note", "AI processing failed.")  # ส่งข้อความแจ้งข้อผิดพลาด หรือใช้ข้อความสำรองหากไม่มีรายละเอียด
+        }), 500  # ส่ง HTTP status 500 เมื่อการประมวลผลเกิดข้อผิดพลาด
 
-            return jsonify({  # ส่งผลลัพธ์กลับไปให้ Frontend
-                "success": True,  # บอกว่าประมวลผลสำเร็จ
-                "image": image_base64,  # ส่งรูปภาพกลับไป
-                "message": result.get("note")  # ส่งข้อความจาก AI กลับไป
-            }), 200  # ส่ง HTTP status 200
+    except (ValueError, TypeError, base64.binascii.Error) as exc:  # ดักจับข้อผิดพลาดจากข้อมูลที่ไม่ถูกต้อง เช่น Base64 หรือค่าสี
 
-
-        return jsonify({  # ถ้า AI ประมวลผลไม่สำเร็จ
-            "success": False,  # บอกว่าการทำงานไม่สำเร็จ
-            "message": result.get(
-                "note",
-                "AI processing failed."
-            )  # ส่งข้อความ error จาก AI
-        }), 500  # ส่ง HTTP status 500
-
-
-    except (ValueError, TypeError, base64.binascii.Error) as exc:  # ตรวจสอบกรณีรูปแบบข้อมูลไม่ถูกต้อง
-
-        return jsonify({  # ส่งข้อความ error กลับไป
-            "success": False,  # บอกว่าการทำงานไม่สำเร็จ
-            "message": str(exc)  # แสดงข้อความ error
-        }), 400  # ส่ง HTTP status 400
+        return jsonify({         # ส่งรายละเอียดข้อผิดพลาดกลับไปยัง Frontend
+            "success": False,    # ระบุว่าการทำงานไม่สำเร็จ
+            "message": str(exc)  # แปลงข้อผิดพลาดเป็นข้อความเพื่อส่งกลับไป
+        }), 400  # ส่ง HTTP status 400 เมื่อข้อมูลที่ได้รับไม่ถูกต้อง
 
     
 # =========================================================
@@ -556,7 +567,7 @@ def txt2img():
     if user is None:  # ตรวจสอบว่าผู้ใช้ Login แล้วหรือยัง
         return redirect(url_for("login"))  # ถ้ายังไม่ได้ Login ให้กลับไปหน้า Login
     
-    return render_template("TXT2img.html", user=user)  # แสดงหน้า webcam.html
+    return render_template("TXT2img.html", user=user)  # แสดงหน้า TXT2img.html
 
 
 # =========================================================
