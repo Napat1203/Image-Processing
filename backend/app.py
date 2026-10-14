@@ -1,6 +1,22 @@
 import sys  # ใช้จัดการ Python path เพื่อให้ import ไฟล์ในโปรเจกต์ได้
 from pathlib import Path  # ใช้จัดการ path ของโฟลเดอร์และไฟล์
-import base64 # ใช้เข้ารหัสและถอดรหัสข้อมูลเป็นข้อความ base64
+import base64
+
+from sympy import python # ใช้เข้ารหัสและถอดรหัสข้อมูลเป็นข้อความ base64
+
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+
+from backend.db import (
+    init_db,
+    get_user_by_username,
+    get_user_by_id,
+    create_user,
+    list_users,
+    count_users,
+    update_user_role,
+    delete_user,
+)
 
 from flask import (
     Flask,     # ใช้สร้าง Flask application
@@ -13,16 +29,6 @@ from flask import (
 )
 
 from flask_cors import CORS  # ใช้เปิด CORS ให้สามารถเรียก API ได้
-
-ROOT = Path(__file__).resolve().parent.parent  # หาโฟลเดอร์หลักของโปรเจกต์ Image-Processing
-sys.path.insert(0, str(ROOT))  # เพิ่มโฟลเดอร์หลักเข้าไปใน Python path
-
-from backend.db import (   # import ฟังก์ชันที่ใช้ติดต่อ SQLite
-    init_db,               # สร้างและเตรียม database
-    get_user_by_username,  # ค้นหา user จาก username
-    create_user,           # สร้าง user ใหม่
-    list_users,            # แสดงรายการ user ทั้งหมด
-)
 
 from ai.process import process  # import ฟังก์ชัน AI สำหรับประมวลผลรูปภาพ
 from ai.forge_client import generate_image, ForgeError  # import ฟังก์ชันสร้างภาพและ error จาก Forge
@@ -152,25 +158,87 @@ def logout():  # ฟังก์ชันออกจากระบบ
 # =========================================================
 # ฟังก์ชันแสดงหน้า Admin
 # =========================================================
-@app.route("/admin")  # สร้าง route สำหรับหน้า Admin
-def admin():  # ฟังก์ชันแสดงหน้า Admin
+@app.route("/admin")
+def admin():
 
-    user = session.get("user")  # อ่านข้อมูล user จาก session
+    # อ่านข้อมูลผู้ใช้จาก session
+    user = session.get("user")
 
-    if user is None:  # ตรวจสอบว่าผู้ใช้ Login หรือยัง
-        return redirect(url_for("login"))  # ถ้ายังไม่ได้ Login ให้กลับไปหน้า Login
+    # ถ้ายังไม่ได้ Login ให้กลับไปหน้า Login
+    if user is None:
+        return redirect(url_for("login"))
 
-    if user.get("role") not in ["super", "admin"]:  # ตรวจสอบว่าเป็น super หรือ admin หรือไม่
-        return redirect(url_for("image"))  # ถ้าไม่ใช่ให้กลับไปหน้า Image
+    # อนุญาตเฉพาะ super และ admin
+    if user.get("role") not in ["super", "admin"]:
+        return redirect(url_for("image"))
 
-    return render_template(  # แสดงหน้า Admin
-        "admin.html",        # ใช้หน้า admin.html
-        user=user,           # ส่งข้อมูล user ไปให้หน้าเว็บ
-        users=list_users(),            # ส่งข้อมูล users ตามโครงสร้างเดิม
-        total=0,             # ส่งจำนวน user ตามโครงสร้างเดิม
-        error=None,          # ไม่มี error
-        owner=user.get("role") == "super"  # ตรวจสอบว่าเป็นเจ้าของระบบหรือไม่
+    # ดึงรายชื่อผู้ใช้และจำนวนผู้ใช้จาก Database
+    users = list_users()
+    total = count_users()
+
+    # แสดงหน้า Admin พร้อมข้อมูลที่จำเป็น
+    return render_template(
+        "admin.html",
+        user=user,
+        users=users,
+        total=total,
+        error=None,
+        owner=user.get("role") == "super"
     )
+
+# เปลี่ยนสิทธิ์ผู้ใช้ (เฉพาะ super เท่านั้น)
+@app.route("/admin/toggle-role", methods=["POST"])
+def admin_toggle_role():
+    user = session.get("user")
+
+    if user is None:
+        return redirect(url_for("login"))
+
+    if user.get("role") != "super":
+        return redirect(url_for("admin"))
+
+    user_id = request.form.get("user_id", type=int)
+    role = request.form.get("role")
+
+    if user_id is None or role not in ("user", "admin"):
+        return redirect(url_for("admin"))
+
+    # ป้องกันการเปลี่ยนสิทธิ์บัญชีตัวเอง
+    if user_id == user.get("id"):
+        return redirect(url_for("admin"))
+
+    update_user_role(user_id, role)
+    return redirect(url_for("admin"))
+
+
+# ลบบัญชีผู้ใช้
+@app.route("/admin/delete", methods=["POST"])
+def admin_delete():
+    user = session.get("user")
+
+    if user is None:
+        return redirect(url_for("login"))
+
+    if user.get("role") not in ("super", "admin"):
+        return redirect(url_for("image"))
+
+    user_id = request.form.get("user_id", type=int)
+
+    if user_id is None or user_id == user.get("id"):
+        return redirect(url_for("admin"))
+
+    target = get_user_by_id(user_id)
+
+    # ห้ามลบบัญชี super
+    if target is None or target["role"] == "super":
+        return redirect(url_for("admin"))
+
+    # super ลบ admin หรือ user ได้
+    # admin ลบได้เฉพาะ user
+    if user.get("role") == "super" or target["role"] == "user":
+        delete_user(user_id)
+
+    return redirect(url_for("admin"))
 
 
 # =========================================================
@@ -580,5 +648,5 @@ if __name__ == "__main__":  # ตรวจสอบว่าไฟล์นี�
     app.run(             # เริ่ม Flask development server
         host="0.0.0.0",  # เปิดให้เครื่องอื่นใน Network เข้ามาหา Backend ได้
         port=8000,       # ให้ Backend ทำงานที่ port 8000
-        debug=True,      # เปิด debug mode เพื่อช่วยตรวจสอบ error ระหว่างพัฒนา
+        debug=False,     # เปิด debug mode เป็น True หากต้องการสำหรับช่วยตรวจสอบ error ระหว่างพัฒนา
     )
