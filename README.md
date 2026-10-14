@@ -13,7 +13,7 @@
 ## สิ่งที่ต้องมี
 
 - Python 3.12.x และ `virtualenv`
-- [Stable Diffusion WebUI Forge](https://github.com/lllyasviel/stable-diffusion-webui-forge) โดยเปิด API ที่ `http://172.20.56.117:7860` ด้วยอาร์กิวเมนต์ `--api`
+- [Stable Diffusion WebUI Forge](https://github.com/lllyasviel/stable-diffusion-webui-forge) โดยเปิด API ที่ `http://172.20.56.117:7860` (ต้องเป็น IP ของเครื่องที่รัน AI ในเครือข่าย LAN เดียวกัน) ด้วยอาร์กิวเมนต์ `--api` ถ้าเป็นในกรณีที่รันคนละเครื่องต้องเปิดพร้อมกับ `--listen` ด้วย
 - โมเดล ControlNet `control_v11p_sd15_openpose` ใน Forge สำหรับฟังก์ชันสร้างภาพตามท่าทาง
 - การสร้างภาพผ่าน Forge ต้องใช้ GPU ตามข้อกำหนดของเครื่อง ส่วนการลบพื้นหลังและการแปลภาษาไทยสามารถทำงานบน CPU ได้
 
@@ -50,7 +50,7 @@ pip install flask flask-cors
 python backend/app.py
 ```
 
-เปิดเว็บเบราว์เซอร์และไปที่ http://172.20.56.229:8000
+เปิดเว็บเบราว์เซอร์และไปที่ http://172.20.56.229:8000 (ต้องเป็น IP ของเครื่องที่รัน backend ในเครือข่าย LAN เดียวกัน)
 
 เมื่อเริ่มใช้งานครั้งแรกที่รัน ระบบจะสร้างฐานข้อมูล `backend/users.db` และบัญชีเจ้าของ `super` / `super` รหัสผ่านเก็บบน SQLite แบบข้อความธรรมดา
 
