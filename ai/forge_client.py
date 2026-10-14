@@ -12,7 +12,8 @@ import requests
 
 # Point FORGE_URL at the notebook on presentation day without editing this file.
 # This Forge serves plain http. An https URL fails the connection.
-FORGE_URL = os.environ.get("FORGE_URL", "http://127.0.0.1:7860").rstrip("/")
+# FORGE_URL = os.environ.get("FORGE_URL", "http://127.0.0.1:7860").rstrip("/") 
+FORGE_URL = os.environ.get("FORGE_URL", "http://172.20.56.117/index.html").rstrip("/")
 
 # One drawing at a time. A second caller waits here instead of starting Forge twice.
 _generate_lock = threading.Lock()
